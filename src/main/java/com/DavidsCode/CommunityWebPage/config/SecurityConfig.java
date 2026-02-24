@@ -27,6 +27,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/poem/add").hasRole("ADMIN")
                         .requestMatchers("/", "/css/**", "/js/**", "/assets/**",
+                                "/fonts/**",
                                 "/register", "/login", "/api/**",
                                 "/poem/**"
                         ).permitAll()
