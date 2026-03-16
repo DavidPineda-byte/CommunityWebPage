@@ -25,7 +25,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/poem/add").hasRole("ADMIN")
+                        .requestMatchers("/poem/add", "/poem/addGenre").hasRole("ADMIN")
                         .requestMatchers("/", "/css/**", "/js/**", "/assets/**",
                                 "/fonts/**",
                                 "/register", "/login", "/api/**",
