@@ -1,6 +1,9 @@
 package com.DavidsCode.CommunityWebPage.controller;
 
+import com.DavidsCode.CommunityWebPage.entity.Genre;
 import com.DavidsCode.CommunityWebPage.entity.Poem;
+import com.DavidsCode.CommunityWebPage.repository.poemGenreRepository;
+import com.DavidsCode.CommunityWebPage.service.GenreServiceImpl;
 import com.DavidsCode.CommunityWebPage.service.UserService;
 import com.DavidsCode.CommunityWebPage.service.poemServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,15 +21,21 @@ import java.util.List;
 public class PoemController {
     @Autowired
     private poemServiceImpl poemServiceImpl;
+    @Autowired
+    private GenreServiceImpl genreServiceImpl;
 
     @GetMapping
-    public String showPoems(Model model) {
-        List<Poem> poems = poemServiceImpl.getAllPoems();
-        model.addAttribute("poems", poems);
-        return "displayPoems";
-
+    public String showPoemGenres(Model model) {
+        List<Genre> genres = genreServiceImpl.findAllGenres();
+        model.addAttribute("genres", genres);
+        return "PoemGenreMenu";
     }
 
+    @PostMapping("/addGenre")
+    public String addGenre(@ModelAttribute Genre genre) {
+        genreServiceImpl.saveGenre(genre);
+        return "redirect:/poem";
+    }
     @GetMapping("/add")
     public String addPoem(Model model){
     model.addAttribute("poem", new Poem());
@@ -37,5 +46,9 @@ public class PoemController {
     public String addPoem(@ModelAttribute("poem") Poem poem){
         poemServiceImpl.addPoem(poem);
         return "redirect:/poem";
+    }
+    @ModelAttribute("genre")
+    public Genre genre() {
+        return new Genre();
     }
 }
