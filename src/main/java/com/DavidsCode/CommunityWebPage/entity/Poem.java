@@ -13,6 +13,7 @@ public class Poem {
     private String author;
     @Column(columnDefinition = "LONGTEXT")
     private String body;
+    private String genre;
 
     public Poem() {
 
@@ -62,5 +63,12 @@ public class Poem {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getGenre() {
+        return genre;
+    }
+    public void setGenre(String genre) {
+        this.genre = genre;
     }
 }

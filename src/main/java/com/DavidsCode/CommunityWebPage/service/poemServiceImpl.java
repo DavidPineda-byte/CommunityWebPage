@@ -12,7 +12,7 @@ import java.util.Optional;
 public class poemServiceImpl implements poemService {
 
    @Autowired
-   poemRepository poemRepository;
+   public poemRepository poemRepository;
 
     @Override
     public Poem getPoemById(Long id) {

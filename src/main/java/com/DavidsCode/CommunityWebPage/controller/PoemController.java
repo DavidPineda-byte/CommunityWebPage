@@ -9,12 +9,10 @@ import com.DavidsCode.CommunityWebPage.service.poemServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/poem")
@@ -50,5 +48,16 @@ public class PoemController {
     @ModelAttribute("genre")
     public Genre genre() {
         return new Genre();
+    }
+
+    @GetMapping("/genres/{id}")
+    public String LoadGenrePoem(@PathVariable Long id, Model model){
+        Genre genre = genreServiceImpl.findGenreById(id)
+                .orElseThrow(() -> new RuntimeException("Genre not found"));
+
+        List<Poem> poems = poemServiceImpl.poemRepository.findByGenre(genre.getName());
+
+        model.addAttribute("poems", poems);
+        return "displayPoems";
     }
 }
