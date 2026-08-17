@@ -1,18 +1,21 @@
 package com.DavidsCode.CommunityWebPage.service;
 
+import com.DavidsCode.CommunityWebPage.entity.Category;
+import com.DavidsCode.CommunityWebPage.entity.ContentStatus;
+import com.DavidsCode.CommunityWebPage.entity.Genre;
 import com.DavidsCode.CommunityWebPage.entity.Poem;
 import com.DavidsCode.CommunityWebPage.exceptions.ResourceNotFoundException;
-import com.DavidsCode.CommunityWebPage.repository.poemRepository;
+import com.DavidsCode.CommunityWebPage.repository.PoemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
+
 @Service
 public class poemServiceImpl implements poemService {
 
    @Autowired
-   public poemRepository poemRepository;
+   public PoemRepository poemRepository;
 
     @Override
     public Poem getPoemById(Long id) {
@@ -42,6 +45,20 @@ public class poemServiceImpl implements poemService {
         poemRepository.save(poem);
     }
     public List<Poem> getAllPoems(){
+        // Only return APPROVED poems for public-facing pages
+        return poemRepository.findByStatus(ContentStatus.APPROVED);
+    }
+
+    public List<Poem> getPoemsByGenre(Genre genre){
+       return poemRepository.findByGenreAndStatus(genre, ContentStatus.APPROVED);
+    }
+
+    public List<Poem> getPoemsByCategory(Category category){
+        return poemRepository.findByCategory(category);
+    }
+
+    // Returns ALL poems regardless of status — used by the admin dashboard
+    public List<Poem> getAllPoemsUnfiltered() {
         return poemRepository.findAll();
     }
 }

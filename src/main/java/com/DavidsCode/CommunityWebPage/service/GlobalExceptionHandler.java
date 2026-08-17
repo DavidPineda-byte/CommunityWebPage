@@ -11,13 +11,21 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity handleResourceNotFound(Exception ex) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    public org.springframework.web.servlet.ModelAndView handleGeneralException(Exception ex) {
+        org.springframework.web.servlet.ModelAndView mav = new org.springframework.web.servlet.ModelAndView();
+        mav.addObject("exception", ex);
+        mav.addObject("url", "Request URL");
+        mav.setViewName("error/500");
+        return mav;
     }
+
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity handleResourceNotFound(ResourceNotFoundException e) {
-        return new ResponseEntity<>("Resource not found: " + e.getMessage(),
-                HttpStatus.NOT_FOUND);
+    public org.springframework.web.servlet.ModelAndView handleResourceNotFound(ResourceNotFoundException ex) {
+        org.springframework.web.servlet.ModelAndView mav = new org.springframework.web.servlet.ModelAndView();
+        mav.addObject("exception", ex);
+        mav.addObject("url", "Request URL");
+        mav.setViewName("error/404");
+        return mav;
     }
 
 }

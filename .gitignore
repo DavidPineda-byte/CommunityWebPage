@@ -31,3 +31,23 @@ build/
 
 ### VS Code ###
 .vscode/
+
+.env.local
+.env
+
+
+# Oracle Wallet credentials (do not commit DB keys)
+src/main/resources/wallet/
+
+# System & runtime logs
+*.log
+
+# macOS system folder metadata
+.DS_Store
+**/.DS_Store
+
+# Dynamic runtime uploads
+src/main/resources/static/uploads/
+
+# Workspace Agent Configurations (Optional)
+.agents/

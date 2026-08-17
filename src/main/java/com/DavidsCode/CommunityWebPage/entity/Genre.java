@@ -9,9 +9,21 @@ public class Genre {
     private long id;
     @Column
     private String name;
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(length = 100000)
     private String description;
+    @Column(length = 2048)
+    private String imageUrl;
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
 
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 
     public String getDescription() {
         return description;
@@ -35,5 +47,12 @@ public class Genre {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+    public void setCategory(Category category) {
+        this.category = category;
     }
 }

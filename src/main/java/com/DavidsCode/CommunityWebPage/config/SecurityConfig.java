@@ -24,18 +24,23 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/poem/generate-image", "/api/**", "/payment/**", "/stripe/**", "/comment/add")
+                )
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/poem/add", "/poem/addGenre").hasRole("ADMIN")
+                        .requestMatchers("/genre/add", "/blog/draft", "/admin/**").hasRole("ADMIN")
                         .requestMatchers("/", "/css/**", "/js/**", "/assets/**",
-                                "/fonts/**",
+                                "/fonts/**", "/displayPoems",
                                 "/register", "/login", "/api/**",
-                                "/poem/**"
+                                "/payment/**", "/stripe/**", "/blog", "/blog/**",
+                                "/genre", "/genre/**", "/essay/**", "/poem/read/**", "/featured"
                         ).permitAll()
+                        .requestMatchers("/my-works", "/comment/add", "/publish", "/publish/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .formLogin(formLogin -> formLogin
                         .loginPage("/login")
-                        .defaultSuccessUrl("/welcome", true)
+                        .defaultSuccessUrl("/featured", true)
                 )
                 .logout(logout -> logout.permitAll());
         return http.build();

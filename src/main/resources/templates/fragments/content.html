@@ -1,0 +1,1963 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+
+<!-- HOME FRAGMENT -->
+<div th:fragment="home" class="landing-page">
+    <section class="h-100">
+        <div class="landing-page-hero h-100" data-bss-parallax-bg="true" th:style="'background: url(/assets/img/a-lone-fisherman-standing-max-1720844236.jpg) center / cover;'">
+            <div class="container-fluid h-100">
+                <div class="row h-100">
+                    <div class="col-md-6 text-center text-md-start d-flex justify-content-center align-items-center justify-content-md-start align-items-md-center justify-content-xl-center">
+                        <div style="max-width: 600px;">
+                            <h1 class="text-uppercase fw-bold landing-page-title">Escape Today's Confusion&nbsp;</h1>
+                            <p class="my-3 landing-page-subtitle">Poetry and essays to search for clarity in todays age of massive information on important topics</p>
+                            <a th:href="@{/blog}" class="btn btn-outline-light mt-3 px-4">Read the Blog</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- GENRE FRAGMENT -->
+<div th:fragment="genres">
+    <div id="galleryOuterContainer" class = "container-fluid">
+        <h2 id="galleryHeader" class="text-center mb-5 mt-5">
+            Explore
+            A Topic Through Its Genres
+        </h2>
+        <div id="card-container">
+            <div th:each="pair : ${categoryGenreMap}" class="individualRowCards mb-4">
+                <h3 th:text="${pair.key.name}"></h3>
+
+                <div class="d-flex flex-row text-center gap-5">
+                    <div th:each="genre : ${pair.value}">
+                        <a th:href="@{/genre/{id}(id=${genre.id})}" class="text-decoration-none">
+                            <div class="custom-card genre-card d-flex align-items-end justify-content-center" 
+                                 th:style="'background: linear-gradient(to top, rgba(16,19,23,0.9) 0%, rgba(16,19,23,0.1) 100%), url(' + ${genre.imageUrl} + ') center/cover no-repeat; min-height: 150px; min-width: 150px;'">
+                                <div class="card-body pb-4">
+                                    <h3 class="card-title m-0 text-gold text-uppercase" style="font-family: 'Space Grotesk', serif;" th:text="${genre.name}"></h3>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- POEMS FRAGMENT -->
+<div th:fragment="poems">
+    <h2 class="text-center mb-5 mt-5" th:text="${genreName}"></h2>
+    <div class="row g-4">
+        <div class="col-md-4" th:each="poem : ${poems}">
+            <a th:href="@{/poem/read/{id}(id=${poem.id})}" class="text-decoration-none">
+                <div class="custom-card h-100 p-4 poem-card">
+                    <h5 class="mb-2" th:text="${poem.title}">Title</h5>
+                    <p class="small text-gold mb-3" th:text="${poem.author}">Author</p>
+                    <p class="small opacity-75 mb-0" th:text="${poem.genre?.name}">Genre</p>
+                </div>
+            </a>
+        </div>
+    </div>
+    <div sec:authorize="isAuthenticated()" class="text-center mt-5">
+        <a th:href="@{/poem/add(genre=${genreName})}" class="btn btn-gold btn-lg px-5">Write & Publish a Poem</a>
+    </div>
+</div>
+
+<!-- READ POEM FRAGMENT -->
+<div th:fragment="readPoem" class="poem-reading-page" style="margin-top: -70px; padding-bottom: 70px; margin-bottom: -70px; min-height: calc(100vh + 70px); background-color: #101317;">
+    <style>
+        .poem-hero {
+            position: relative;
+            width: 100%;
+            height: 60vh;
+            min-height: 400px;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .poem-hero::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(16, 19, 23, 0) 0%, rgba(16, 19, 23, 1) 100%);
+            z-index: 1;
+        }
+        .poem-header-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding-top: 5vh;
+        }
+        .poem-title {
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            font-size: 4rem;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.9);
+        }
+        .poem-author {
+            font-size: 1.2rem;
+            color: #e0e0e0;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+        }
+        .poem-glass-card {
+            background: rgba(26, 29, 35, 0.5);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+            border-radius: 12px;
+            padding: 4rem 3rem;
+            margin: -10vh auto 5rem;
+            max-width: 800px;
+            position: relative;
+            z-index: 2;
+        }
+        .poem-body {
+            font-size: 1.25rem;
+            line-height: 2.2;
+            color: #c9d1d9;
+            text-align: center;
+        }
+        @media (max-width: 768px) {
+            .poem-title { font-size: 2.5rem; }
+            .poem-glass-card { padding: 2.5rem 1.5rem; margin-top: -5vh; }
+        }
+    </style>
+
+    <div class="poem-hero" th:style="'background-image: url(' + ${poem.imageUrl} + ');'">
+        <div class="poem-header-content container">
+            <h1 class="poem-title" th:text="${poem.title}">Title</h1>
+            <p class="poem-author">BY <span th:text="${poem.author}">Author</span> &nbsp;|&nbsp; <span th:text="${#temporals.format(poem.createdAt, 'MMM dd, yyyy')}">Date</span></p>
+        </div>
+    </div>
+
+    <div class="container px-3">
+        <div class="poem-glass-card">
+            <div class="poem-body" id="poem-displayBody" th:utext="${poem.body}">
+                Poem body goes here...
+            </div>
+            
+            <div class="text-center mt-5" sec:authorize="isAuthenticated()">
+                <hr class="border-secondary opacity-25 mb-4">
+                <a th:href="@{/content/{id}/edit(id=${poem.id})}" class="btn btn-outline-light rounded-pill px-4">Edit Content</a>
+            </div>
+        </div>
+
+        <!-- Comments Section -->
+        <div style="max-width: 800px; margin: 0 auto 5rem;">
+            <h3 style="color: #ffffff; font-size: 1.4rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 0.75rem;">
+                Comments <span th:if="${comments != null}" style="font-size: 1rem; color: #888;" th:text="'(' + ${#lists.size(comments)} + ')'"></span>
+            </h3>
+
+            <!-- Post a comment (authenticated only) -->
+            <div sec:authorize="isAuthenticated()" style="background: rgba(26,29,35,0.5); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 1.5rem; margin-bottom: 2rem;">
+                <form th:action="@{/comment/add}" method="post">
+                    <input type="hidden" name="contentItemId" th:value="${poem.id}"/>
+                    <input type="hidden" name="redirectUrl" th:value="@{/poem/read/{id}(id=${poem.id})}"/>
+                    <textarea name="body" rows="3" class="form-control mb-3" placeholder="Share your thoughts..." style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: #e0e0e0; border-radius: 8px;" required></textarea>
+                    <button type="submit" class="btn btn-outline-light rounded-pill px-4">Post Comment</button>
+                </form>
+            </div>
+            <div sec:authorize="!isAuthenticated()" style="color: #888; margin-bottom: 1.5rem;">
+                <a href="/login" style="color: #ffffff;">Log in</a> to leave a comment.
+            </div>
+
+            <!-- Comment List -->
+            <div th:if="${comments != null and !#lists.isEmpty(comments)}">
+                <div th:each="c : ${comments}" style="border-bottom: 1px solid rgba(255,255,255,0.05); padding: 1.25rem 0;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <strong style="color: #ffffff;" th:text="${c.author}">Author</strong>
+                        <small style="color: #666;" th:text="${#temporals.format(c.createdAt, 'MMM dd, yyyy HH:mm')}">Date</small>
+                    </div>
+                    <p style="color: #c9d1d9; margin: 0;" th:text="${c.body}">Comment body</p>
+                </div>
+            </div>
+            <div th:if="${comments == null or #lists.isEmpty(comments)}" style="color: #555; font-style: italic;">
+                No comments yet. Be the first to share your thoughts!
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- LOGIN FRAGMENT -->
+<div th:fragment="login" class="d-flex justify-content-center align-items-center w-100 p-4">
+    <div class="auth-container w-100" style="margin: auto;">
+        <h2 class="text-center mb-4">Login</h2>
+        <div th:if="${param.error}" class="alert alert-danger text-center">
+            Invalid username or password.
+        </div>
+        <form th:action="@{/login}" method="post">
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" name="username" class="form-control" placeholder="Enter username">
+            </div>
+            <div class="mb-4">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" placeholder="Enter password">
+            </div>
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-gold">Login</button>
+                <a href="/register" class="btn btn-outline-light border-0">Don't have an account? Register</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- REGISTER FRAGMENT -->
+<div th:fragment="register" class="d-flex justify-content-center align-items-center w-100 p-4">
+    <div class="auth-wrapper auth-container w-100" style="margin: auto;">
+        <h2 class="text-center mb-4">Register</h2>
+        <form th:action="@{/register}" th:object="${user}" method="post">
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" th:field="*{username}" class="form-control" placeholder="Choose a username">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Display Name <small class="text-white-50">(shown as author on your content)</small></label>
+                <input type="text" th:field="*{displayName}" class="form-control" placeholder="Your full name or pen name" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Email Address</label>
+                <input type="email" th:field="*{email}" class="form-control" placeholder="your@email.com">
+            </div>
+            <div class="mb-4">
+                <label class="form-label">Password</label>
+                <input type="password" th:field="*{password}" class="form-control" placeholder="Choose a password"
+                       required
+                       pattern="(?=.*\d)(?=.*[^a-zA-Z0-9]).*"
+                       title="Password must contain at least one number and one symbol."/>
+            </div>
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-gold">Register</button>
+                <a href="/login" class="btn btn-outline-light border-0">Already registered? Login</a>
+            </div>
+        </form>
+        <div th:if="${error}" class="mt-3 text-danger text-center" th:text="${error}"></div>
+    </div>
+</div>
+
+<!-- ADD POEM FRAGMENT -->
+<div th:fragment="addPoem" class="auth-container" style="max-width: 700px;">
+    <h2 class="text-center mb-4">Create a Poem</h2>
+    <form th:action="@{/poem/add}"
+          th:object="${poem}"
+          method="post"
+          enctype="multipart/form-data"
+          onsubmit="return validatePoemForm();">
+
+        <div class="container-fluid">
+            <div class="row">
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <input type="text" class="form-control" th:field="*{title}"/>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Author</label>
+                        <input type="text" class="form-control" th:field="*{author}"/>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Genre</label>
+                        <select class="form-control" name="genreId">
+                            <option value="">-- Select a Genre --</option>
+                            <option th:each="g : ${genres}" th:value="${g.id}" th:text="${g.name}"></option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Poem Body</label>
+                        <textarea class="form-control" rows="8" th:field="*{body}"></textarea>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-4">
+                        <label class="form-label">Generate an image with our API</label>
+                        <input type="text"
+                               id="imagePrompt"
+                               class="form-control mb-2"
+                               placeholder="Describe the perfect image to represent your poem!"/>
+
+                        <input type="button"
+                               value="Generate Image"
+                               class="btn btn-outline-light w-100"
+                               onclick="generateImage(document.getElementById('imagePrompt').value)"/>
+                    </div>
+
+                    <input type="hidden" id="generatedImageUrlInput" name="generatedImageUrl"
+                           th:value="${poem.imageUrl}"/>
+
+                    <div class="d-flex flex-column align-items-center justify-content-center border border-secondary rounded p-4 text-muted mb-3"
+                         id="imagePlaceholder"
+                         th:style="${poem.imageUrl != null and !poem.imageUrl.isEmpty() ? 'display: none !important;' : 'min-height: 250px; background-color: #1a1a1a;'}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor"
+                             class="bi bi-image text-gold opacity-50 mb-3" viewBox="0 0 16 16">
+                            <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                            <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-12zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1h12z"/>
+                        </svg>
+                        <span class="text-gold opacity-75 small text-center">Your generated image will appear here</span>
+                    </div>
+
+                    <div class="d-flex justify-content-center">
+                        <img id="generatedImage" class="img-fluid rounded border border-secondary" alt="Generated image"
+                             th:src="${poem.imageUrl}"
+                             th:style="${poem.imageUrl != null and !poem.imageUrl.isEmpty() ? 'display: block;' : 'display: none;'}">
+                        <div id="imageSpinner" class="spinner-border d-none" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-grid mt-4">
+            <button type="submit" class="btn btn-gold btn-lg">Save to Library</button>
+            <!-- Review notice: informs non-admin users their poem will be moderated -->
+            <div class="alert mt-3 text-center" style="background: rgba(255,193,7,0.08); color: #ffc107; border: 1px solid rgba(255,193,7,0.2); font-size: 0.85rem;">
+                <i class="fas fa-info-circle me-1"></i>
+                Your poem will be reviewed by an admin before it appears on the site.
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- INDIVIDUAL GENRE FEATURE PAGE FRAGMENT -->
+<div th:fragment="genreTemplate" class="genre-template-page">
+    <div class="container py-4 py-xl-5">
+        <div class="row gy-4 gy-md-0">
+            <div class="col-md-6 text-center text-md-start d-flex justify-content-center align-items-center justify-content-md-start align-items-md-center justify-content-xl-center">
+                <div style="max-width: 350px;">
+                    <h1 class="text-uppercase fw-bold" th:text="${genre.name}">Genre Name</h1>
+                    <p class="my-3" th:text="${genre.description}">Genre description goes here.</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="m-xl-5 p-xl-5"><img class="img-fluid object-fit-cover rounded w-100" style="min-height: 300px;" th:src="${genre.imageUrl}"></div>
+            </div>
+        </div>
+    </div>
+    <div class="container py-4 py-xl-5">
+        <!-- Poems Section -->
+        <div class="row mb-5" th:if="${not #lists.isEmpty(poems)}">
+            <div class="col-md-8 col-xl-6 text-center mx-auto">
+                <h2>Poems</h2>
+                <p class="opacity-75">Explore the poems written under this genre.</p>
+            </div>
+        </div>
+        <div class="row gy-4 row-cols-1 row-cols-md-2 row-cols-xl-3 mb-5" id="poemCardsRow" th:if="${not #lists.isEmpty(poems)}">
+            <div class="col" th:each="poem : ${poems}">
+                <a th:href="@{/poem/read/{id}(id=${poem.id})}" class="text-decoration-none">
+                    <div class="custom-card genre-template-card p-4">
+                        <h4 class="card-title" th:text="${poem.title}">Title</h4>
+                        <p class="card-text opacity-75" th:text="${poem.author}">Author</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Essays Section -->
+        <div class="row mb-5" th:if="${not #lists.isEmpty(essays)}">
+            <div class="col-md-8 col-xl-6 text-center mx-auto">
+                <h2>Essays</h2>
+                <p class="opacity-75">Read the essays published under this genre.</p>
+            </div>
+        </div>
+        <div class="row gy-4 row-cols-1 row-cols-md-2 row-cols-xl-3" id="essayCardsRow" th:if="${not #lists.isEmpty(essays)}">
+            <div class="col" th:each="essay : ${essays}">
+                <a th:href="@{/essay/{id}(id=${essay.id})}" class="text-decoration-none">
+                    <div class="custom-card genre-template-card p-4">
+                        <h4 class="card-title" th:text="${essay.title}">Title</h4>
+                        <p class="card-text opacity-75" th:text="${essay.author}">Author</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <!-- Empty State -->
+        <div class="row mb-5" th:if="${#lists.isEmpty(poems) and #lists.isEmpty(essays)}">
+            <div class="col-12 text-center text-white-50 mt-5">
+                <i class="bi bi-journal-x display-1 mb-3"></i>
+                <h3>No Content Yet</h3>
+                <p>There are currently no poems or essays published in this genre.</p>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Posted Essay Template -->
+<div th:fragment="postedEssayFragment" id="postedEssayTemplate">
+    <div class="container" style="padding: 110px;">
+        <div class="row mb-5">
+            <div class="col-md-12" style="border-radius: 2px;border-bottom: 4px solid rgb(17,18,18) ;">
+                <div>
+                    <h1 th:text="${essay.title}"style="font-size: 74px;">TITLE</h1>
+                </div>
+            </div>
+            <div class="col-xl-4 d-flex mt-3">
+                <h1 th:text="${essay.author}"style="font-size: 20px;">Author Name&nbsp;</h1>
+                <h1 style="font-size: 20px;">|&nbsp;<i class="far fa-clock"></i> <span th:text="${#temporals.format(essay.createdAt, 'MMM dd, yyyy')}">Date</span></h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="d-flex justify-content-center" id="htmlEssaySpace">
+                    <article th:utext="${essay.body}"></article>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-5" sec:authorize="isAuthenticated()">
+            <div class="col text-center mb-5">
+                <a th:href="@{/content/{id}/edit(id=${essay.id})}" class="btn btn-outline-light">Edit Content</a>
+            </div>
+        </div>
+        
+        <!-- Comments Section -->
+        <div style="max-width: 800px; margin: 0 auto 5rem;">
+            <h3 style="color: #ffffff; font-size: 1.4rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 0.75rem;">
+                Comments <span th:if="${comments != null}" style="font-size: 1rem; color: #888;" th:text="'(' + ${#lists.size(comments)} + ')'"></span>
+            </h3>
+
+            <!-- Post a comment (authenticated only) -->
+            <div sec:authorize="isAuthenticated()" style="background: rgba(26,29,35,0.5); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 1.5rem; margin-bottom: 2rem;">
+                <form th:action="@{/comment/add}" method="post">
+                    <input type="hidden" name="contentItemId" th:value="${essay.id}"/>
+                    <input type="hidden" name="redirectUrl" th:value="@{/essay/{id}(id=${essay.id})}"/>
+                    <textarea name="body" rows="3" class="form-control mb-3" placeholder="Share your thoughts..." style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: #e0e0e0; border-radius: 8px;" required></textarea>
+                    <button type="submit" class="btn btn-outline-light rounded-pill px-4">Post Comment</button>
+                </form>
+            </div>
+            <div sec:authorize="!isAuthenticated()" style="color: #888; margin-bottom: 1.5rem;">
+                <a href="/login" style="color: #ffffff;">Log in</a> to leave a comment.
+            </div>
+
+            <!-- Comment List -->
+            <div th:if="${comments != null and !#lists.isEmpty(comments)}">
+                <div th:each="c : ${comments}" style="border-bottom: 1px solid rgba(255,255,255,0.05); padding: 1.25rem 0;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <strong style="color: #ffffff;" th:text="${c.author}">Author</strong>
+                        <small style="color: #666;" th:text="${#temporals.format(c.createdAt, 'MMM dd, yyyy HH:mm')}">Date</small>
+                    </div>
+                    <p style="color: #c9d1d9; margin: 0;" th:text="${c.body}">Comment body</p>
+                </div>
+            </div>
+            <div th:if="${comments == null or #lists.isEmpty(comments)}" style="color: #555; font-style: italic;">
+                No comments yet. Be the first to share your thoughts!
+            </div>
+        </div>
+    </div>
+</div>
+<!-- My Works Template -->
+<div th:fragment="myWorksTemplate" style="min-height: 100vh; background-color: #101317; padding: 4rem 0;">
+    <style>
+        .works-status-pending  { background: rgba(255,193,7,0.15);  color: #ffc107; border: 1px solid rgba(255,193,7,0.3); }
+        .works-status-approved { background: rgba(40,167,69,0.15);  color: #28a745; border: 1px solid rgba(40,167,69,0.3); }
+        .works-status-rejected { background: rgba(220,53,69,0.15);  color: #dc3545; border: 1px solid rgba(220,53,69,0.3); }
+    </style>
+    <div class="container" style="max-width: 860px;">
+        <div class="mb-5">
+            <h1 style="color: #ffffff; font-size: 2.5rem; letter-spacing: 3px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 1rem;">My Works</h1>
+            <p style="color: #888;">Track the status of everything you've submitted.</p>
+        </div>
+
+        <div th:if="${myItems == null or #lists.isEmpty(myItems)}"
+             class="text-center py-5" style="color: #555; font-style: italic;">
+            You haven't submitted anything yet. <a href="/publish" style="color: #ffffff;">Write something!</a>
+        </div>
+
+        <div th:if="${myItems != null and !#lists.isEmpty(myItems)}"
+             style="display: flex; flex-direction: column; gap: 1rem;">
+            <div th:each="item : ${myItems}"
+                 style="background: rgba(26,29,35,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 1rem; flex-grow: 1;">
+                    <img th:if="${item.imageUrl}" th:src="${item.imageUrl}"
+                         style="width: 56px; height: 56px; object-fit: cover; border-radius: 8px; flex-shrink: 0;">
+                    <div th:unless="${item.imageUrl}"
+                         style="width: 56px; height: 56px; background: rgba(255,255,255,0.08); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i class="fas fa-file-alt" style="color: #ffffff; opacity: 0.4;"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: #e0e0e0;" th:text="${item.title}">Title</div>
+                        <small style="color: #666;">
+                            <span th:text="${item.contentType}">Type</span>
+                            &nbsp;·&nbsp;
+                            <span th:text="${#temporals.format(item.createdAt, 'MMM dd, yyyy')}">Date</span>
+                        </small>
+                    </div>
+                </div>
+                <span class="badge rounded-pill px-3 py-2"
+                      th:classappend="${item.status.name() == 'PENDING'} ? 'works-status-pending' : (${item.status.name() == 'APPROVED'} ? 'works-status-approved' : 'works-status-rejected')"
+                      th:text="${item.status}">STATUS</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Publishing Template -->
+<div th:fragment="publishTemplate" class="publish-page">
+    <div class="container-fluid h-100 p-5 d-flex flex-column">
+
+        <!-- Heading -->
+        <div class="row mb-4">
+            <div class="col text-center">
+                <h1>Publish</h1>
+            </div>
+        </div>
+
+        <!-- Form Row: left inputs + right editor -->
+        <div class="row flex-grow-1">
+            <form th:action="@{/publish/save}" th:object="${publishObject}" method="post" enctype="multipart/form-data"
+                  class="row g-4 w-100">
+
+                <!-- Left Column: Author, Title, Genre, Publish As -->
+                <div class="col-md-3 d-flex flex-column gap-4">
+                    <input class="form-control publish-input" type="text"
+                           th:field="*{author}" th:value="${authorName}" placeholder="Author"
+                           readonly style="opacity: 0.75; cursor: not-allowed;"
+                           title="Author is auto-filled from your profile display name">
+                    <input class="form-control publish-input" type="text"
+                           th:field="*{title}" placeholder="Title">
+
+                    <!-- Genre Dropdown -->
+                    <select class="form-select publish-input" th:field="*{genreId}" required>
+                        <option value="">-- Select Genre --</option>
+                        <option th:each="g : ${genres}"
+                                th:value="${g.id}"
+                                th:text="${g.name}">Genre</option>
+                    </select>
+
+                    <!-- Header Banner -->
+                    <div>
+                        <label class="form-label mb-1">Header Banner Image</label>
+                        <input class="form-control publish-input" type="file" name="headerImage" accept="image/*" required>
+                    </div>
+
+                    <!-- Publish As -->
+                    <div>
+                        <h5 class="mb-3">Publish As:</h5>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" th:field="*{typeField}"
+                                   value="POEM" type="radio" id="poemType">
+                            <label class="form-check-label" for="poemType">
+                                Poem <i class="fas fa-paint-brush"></i>
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" th:field="*{typeField}"
+                                   value="ESSAY" type="radio" id="essayType">
+                            <label class="form-check-label" for="essayType">
+                                Essay <i class="far fa-file-alt"></i>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Editor -->
+                <div class="col-md-9 d-flex flex-column gap-3">
+                    <textarea id="editor" th:field="*{body}" style="visibility:hidden;"></textarea>
+                    <div class="d-flex justify-content-center">
+                        <button class="btn btn-primary px-5" type="submit">
+                            <i class="far fa-edit"></i> Publish
+                        </button>
+                    </div>
+                    <!-- Review notice: informs non-admin users their content will be moderated -->
+                    <div class="alert mt-3 text-center" style="background: rgba(255,193,7,0.08); color: #ffc107; border: 1px solid rgba(255,193,7,0.2); font-size: 0.85rem;">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Your submission will be reviewed by an admin before it appears on the site.
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.tiny.cloud/1/s7h7wpnw1wklaqd40bcv60e7ap957cy80wniq73fnglu7zl1/tinymce/8/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        tinymce.init({
+            selector: '#editor',
+            height: 400,
+            plugins: 'lists link image table',
+            toolbar: 'undo redo | blocks | bold italic underline | bullist numlist | link image table',
+
+            file_picker_types: 'image',
+
+            file_picker_callback: function(callback) {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+
+                input.onchange = function() {
+                    const file = input.files[0];
+
+                    const reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        callback(e.target.result, {
+                            alt: file.name
+                        });
+                    };
+
+                    reader.readAsDataURL(file);
+                };
+
+                input.click();
+            },
+
+            setup: function(editor) {
+                editor.on('change', function() {
+                    editor.save();
+                });
+            }
+        });
+    </script>
+</div>
+<!-- Posted Blog Template -->
+<div th:fragment="postedBlogTemplate" id="postedBlogBody">
+    <!-- Hero: header image + description -->
+    <div class="container-fluid" style="text-align: center;">
+        <div class="row flex-column" id="blogHeaderContainer">
+            <div class="col mb-5" id="backgroundImageHeading"
+                 th:style="'background: url(' + ${blog.imageUrl} + ') center / cover; min-height: 300px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;'">
+                <h1 style="font-size: 78px; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.8);" th:text="${blog.title}"></h1>
+                <div class="d-flex justify-content-center text-white mt-3" style="text-shadow: 0 1px 5px rgba(0,0,0,0.8);">
+                    <h4 class="me-3" th:text="'By ' + ${blog.author}">Author</h4>
+                    <h4 th:text="'| ' + ${#temporals.format(blog.createdAt, 'MMM dd, yyyy')}">Date</h4>
+                </div>
+            </div>
+            <div class="col mb-5" id="explanatoryPoemColumn">
+                <p style="font-size: 29px; font-style: italic;" th:utext="${blog.description}"></p>
+            </div>
+        </div>
+
+        <!-- Blog body -->
+        <div class="row" id="topicBlog">
+            <div class="col p-5 mb-5" id="blogContentColumn" style="background-color: #ffffff; color: #212529; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                <div id="blogContent" th:utext="${blog.body}"></div>
+            </div>
+        </div>
+        <div class="row mt-2 mb-5" sec:authorize="isAuthenticated()">
+            <div class="col text-center">
+                <a th:href="@{/content/{id}/edit(id=${blog.id})}" class="btn btn-outline-light">Edit Content</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Content (blogs sharing same tags) -->
+    <div class="container py-4 py-xl-5">
+        <div class="row mb-5">
+            <div class="col-md-8 col-xl-6 text-center mx-auto">
+                <h2>Related Content</h2>
+            </div>
+        </div>
+        <div class="row gy-4 row-cols-1 row-cols-md-2 row-cols-xl-3">
+            <div class="col" th:each="related : ${relatedBlogs}" th:if="${related.id != blog.id}">
+                <a th:href="@{/blog/{id}(id=${related.id})}" class="text-decoration-none">
+                    <div class="card custom-card h-100">
+                        <img class="object-fit-cover card-img-top w-100 d-block" style="height: 200px;"
+                             th:src="${related.imageUrl}" alt="">
+                        <div class="card-body p-4" style="background: #161616;">
+                            <h4 class="card-title" th:text="${recent.title}">Title</h4>
+                            <p class="card-text small opacity-75" th:text="${recent.author}">Author</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Blog Draft Template-->
+<div th:fragment="blogDraftTemplate">
+    <form th:object="${blog}" th:action="@{/blog/draft}" method="post" enctype="multipart/form-data">
+        <div class="container min-vh-100 p-5">
+            <div class="row h-auto mb-5">
+                <div class="col col-lg-6 d-flex h-100 flex-column justify-content-center align-items-center align-self-start gap-5">
+                    <input th:field="*{title}"class="form-control" type="text" placeholder="Blog Title" required="" minlength="10"
+                           maxlength="60" autofocus="">
+                    <input th:field="*{author}" class="form-control" type="text"
+                           readonly style="opacity: 0.75; cursor: not-allowed;" placeholder="Author" 
+                           title="Author is auto-filled from your profile display name">
+                    <div id="tag_select">
+                        <small class="form-text">Choose Tags.</small>
+                        <select class="form-select" id="tagsChoices" th:field="*{tags}" multiple>
+                            <option th:each="tag : ${tags}"
+                                    th:value="${tag.id}"
+                                    th:text="${tag.name}">
+                            </option>
+                        </select>
+                    </div>
+                    <div><label class="form-label">Header Image</label><input name="headerImage" class="form-control d-flex flex-column"
+                                                                              type="file" accept="image/*"
+                                                                              required=""><label class="form-label"></label>
+                    </div>
+                </div>
+                <div class="col border rounded-2 border-2 border-dark d-flex h-100 flex-column justify-content-center align-items-center align-self-center gap-4"
+                     style="min-height: 300px;">
+                    <h1>Description</h1><textarea th:field="*{description}"class="text-center form-control" required="" minlength="50"
+                                                       maxlength="100" autofocus="" spellcheck="true"
+                                                       style="height: 300px;"></textarea>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col d-flex flex-column gap-2 mb-5">
+                    <h1 style="text-align: center;">Blog body</h1>
+                    <div class="d-flex flex-column gap-4" id="textEditorContainer"><textarea th:field="*{body}"
+                                                                                             class="form-control form-control-lg" id="editor" style="height: 600px;" minlength="300"
+                                                                                             maxlength="800" required=""></textarea>
+                        <div id="ChooseRelatedContentContainer"></div>
+                        <div id="submitButtonContainer" style="text-align: center;">
+                            <button class="btn btn-dark btn-lg" type="submit" style="text-align: left;">Button</button>
+                            <!-- Review notice: informs non-admin users their blog will be moderated -->
+                            <div class="alert mt-3" style="background: rgba(255,193,7,0.08); color: #ffc107; border: 1px solid rgba(255,193,7,0.2); font-size: 0.85rem;">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Your blog will be reviewed by an admin before it appears on the site.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <script src="https://cdn.tiny.cloud/1/s7h7wpnw1wklaqd40bcv60e7ap957cy80wniq73fnglu7zl1/tinymce/8/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        tinymce.init({
+            selector: '#editor',
+            height: 400,
+            plugins: 'lists link image table',
+            toolbar: 'undo redo | blocks | bold italic underline | bullist numlist | link image table',
+
+            file_picker_types: 'image',
+
+            file_picker_callback: function(callback) {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+
+                input.onchange = function() {
+                    const file = input.files[0];
+
+                    const reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        callback(e.target.result, {
+                            alt: file.name
+                        });
+                    };
+
+                    reader.readAsDataURL(file);
+                };
+
+                input.click();
+            },
+
+            setup: function(editor) {
+                editor.on('change', function() {
+                    editor.save();
+                });
+            }
+        });
+    </script>
+    <!-- Choices.js for searchable multi-select -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const element = document.getElementById('tagsChoices');
+            const choices = new Choices(element, {
+                removeItemButton: true,
+                searchEnabled: true,
+                searchPlaceholderValue: 'Search tags...',
+                placeholderValue: 'Select tags'
+            });
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</div>
+
+<!-- Admin Users Management Page -->
+<div th:fragment="adminUsersTemplate" style="min-height: 100vh; background-color: #101317; padding: 4rem 0;">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h1 style="color: #ffffff; font-size: 2.2rem; letter-spacing: 2px; text-transform: uppercase;">User Management</h1>
+                <p style="color: #888; margin: 0;">View, manage, and remove registered users.</p>
+            </div>
+            <a href="/admin" class="btn btn-outline-secondary px-4">← Back to Dashboard</a>
+        </div>
+
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div style="background: rgba(26,29,35,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden;">
+            <table class="table table-dark table-hover align-middle mb-0">
+                <thead style="background: rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.2);">
+                    <tr>
+                        <th style="color: #ffffff; padding: 1rem 1.5rem;">ID</th>
+                        <th style="color: #ffffff; padding: 1rem;">Username</th>
+                        <th style="color: #ffffff; padding: 1rem;">Display Name</th>
+                        <th style="color: #ffffff; padding: 1rem;">Email</th>
+                        <th style="color: #ffffff; padding: 1rem;">Role</th>
+                        <th style="color: #ffffff; padding: 1rem;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="u : ${users}" style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                        <td style="padding: 1rem 1.5rem; color: #666;" th:text="${u.id}">1</td>
+                        <td style="padding: 1rem; font-weight: 600;" th:text="${u.username}">username</td>
+                        <td style="padding: 1rem; color: #c9d1d9;" th:text="${u.displayName ?: '—'}">Name</td>
+                        <td style="padding: 1rem; color: #888;" th:text="${u.email ?: '—'}">email</td>
+                        <td style="padding: 1rem;">
+                            <span class="badge rounded-pill px-3 py-1"
+                                  th:style="${u.role == 'ADMIN'} ? 'background: rgba(255,255,255,0.2); color: #ffffff; border: 1px solid rgba(255,255,255,0.3);' : 'background: rgba(255,255,255,0.07); color: #aaa; border: 1px solid rgba(255,255,255,0.1);'"
+                                  th:text="${u.role}">USER</span>
+                        </td>
+                        <td style="padding: 1rem;">
+                            <form th:action="@{/admin/users/{id}/delete(id=${u.id})}" method="post"
+                                  th:if="${u.role != 'ADMIN'}"
+                                  onsubmit="return confirm('Permanently remove this user?')">
+                                <button type="submit" class="btn btn-sm"
+                                        style="background: rgba(220,53,69,0.12); color: #ff6b6b; border: 1px solid rgba(220,53,69,0.3);">
+                                    <i class="fas fa-trash me-1"></i>Remove
+                                </button>
+                            </form>
+                            <span th:if="${u.role == 'ADMIN'}" style="color: #444; font-size: 0.8rem; font-style: italic;">Protected</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Dashboard Template -->
+<div th:fragment="adminDashboardTemplate">
+    <div class="container py-5 text-white">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <h1 class="mb-0 text-gold">Admin Dashboard</h1>
+            <div class="d-flex gap-2">
+                <a href="/admin/content" class="btn btn-outline-warning px-4">
+                    <i class="fas fa-list me-2"></i>Manage All Content
+                </a>
+                <a href="/admin/users" class="btn btn-outline-info px-4">
+                    <i class="fas fa-users me-2"></i>Manage Users
+                </a>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="row g-4">
+            <!-- Genres Management -->
+            <div class="col-md-6">
+                <div class="card bg-dark border-secondary h-100">
+                    <div class="card-header border-secondary d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0 text-gold">Genres</h4>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/admin/genre/add}" method="post" class="d-flex flex-column gap-2 mb-3" enctype="multipart/form-data">
+                            <input type="text" name="name" class="form-control" placeholder="New Genre Name" required>
+                            <textarea name="description" class="form-control" placeholder="Genre Description (Optional)" rows="2"></textarea>
+                            <select name="categoryId" class="form-select" style="background-color: #1a1a1a; color: #f5f5f5; border-color: rgba(230,199,161,0.2);">
+                                <option value="" selected>— Assign to a Category (optional) —</option>
+                                <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option>
+                            </select>
+                            <label class="text-white-50 small mb-0">Upload image file:</label>
+                            <input type="file" name="imageFile" class="form-control" accept="image/*">
+                            <label class="text-white-50 small mb-0">— or paste an image URL —</label>
+                            <input type="url" name="imageUrl" class="form-control" placeholder="https://...">
+                            <button type="submit" class="btn btn-outline-success">Add Genre</button>
+                        </form>
+                        <button class="btn btn-outline-info btn-sm w-100" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGenres" aria-expanded="false" aria-controls="collapseGenres">
+                            Show / Hide Genres List
+                        </button>
+                        <div class="collapse mt-3" id="collapseGenres">
+                            <ul class="list-group list-group-flush border-secondary">
+                                <li class="list-group-item bg-transparent text-white border-secondary d-flex justify-content-between align-items-center" th:each="genre : ${genres}">
+                                    <div>
+                                        <span th:text="${genre.name}">Genre</span>
+                                        <small class="text-white-50 ms-2" th:if="${genre.category}" th:text="'(' + ${genre.category.name} + ')'"></small>
+                                        <small class="text-warning ms-2" th:unless="${genre.category}">(No Category)</small>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <!-- Edit Genre Modal Trigger -->
+                                        <button type="button" class="btn btn-sm btn-outline-light"
+                                                data-bs-toggle="modal" th:data-bs-target="'#editGenreModal-' + ${genre.id}">
+                                            Edit
+                                        </button>
+                                        <!-- Modal -->
+                                        <div class="modal fade" th:id="'editGenreModal-' + ${genre.id}" tabindex="-1">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content bg-dark text-white border-secondary">
+                                                    <div class="modal-header border-secondary">
+                                                        <h5 class="modal-title">Edit Genre: <span th:text="${genre.name}"></span></h5>
+                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <form th:action="@{/admin/genre/update/{id}(id=${genre.id})}" method="post" enctype="multipart/form-data">
+                                                        <div class="modal-body d-flex flex-column gap-3">
+                                                            <input type="text" name="name" class="form-control bg-dark text-white border-secondary" placeholder="New genre name (leave blank to keep current)" th:value="${genre.name}">
+                                                            <label class="text-white-50">Assign Category:</label>
+                                                            <select name="categoryId" class="form-select bg-dark text-white border-secondary">
+                                                                <option value="" th:selected="${genre.category == null}">-- Select Category --</option>
+                                                                <option th:each="cat : ${categories}" 
+                                                                        th:value="${cat.id}" 
+                                                                        th:text="${cat.name}"
+                                                                        th:selected="${genre.category != null and genre.category.id == cat.id}">
+                                                                </option>
+                                                            </select>
+                                                            <label class="text-white-50">Upload new image:</label>
+                                                            <input type="file" name="imageFile" class="form-control bg-dark text-white border-secondary" accept="image/*">
+                                                            <small class="text-white-50">Or paste an image URL:</small>
+                                                            <input type="text" name="imageUrl" class="form-control bg-dark text-white border-secondary" placeholder="https://...">
+                                                        </div>
+                                                        <div class="modal-footer border-secondary">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" class="btn btn-warning">Save Changes</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <form th:action="@{/admin/genre/delete/{id}(id=${genre.id})}" method="post">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                        </form>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Management -->
+            <div class="col-md-6">
+                <div class="card bg-dark border-secondary h-100">
+                    <div class="card-header border-secondary d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0 text-gold">Categories</h4>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/admin/category/add}" method="post" class="d-flex flex-column gap-2 mb-3">
+                            <input type="text" name="name" class="form-control" placeholder="New Category Name" required>
+                            <input type="text" name="description" class="form-control" placeholder="Category Description (optional)">
+                            <button type="submit" class="btn btn-outline-success">Add Category</button>
+                        </form>
+                        <button class="btn btn-outline-info btn-sm w-100" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCategories" aria-expanded="false" aria-controls="collapseCategories">
+                            Show / Hide Categories List
+                        </button>
+                        <div class="collapse mt-3" id="collapseCategories">
+                            <ul class="list-group list-group-flush border-secondary">
+                                <li class="list-group-item bg-transparent text-white border-secondary d-flex justify-content-between align-items-center" th:each="cat : ${categories}">
+                                    <div>
+                                        <span th:text="${cat.name}">Category</span>
+                                        <small class="text-white-50 ms-2" th:if="${cat.description}" th:text="${cat.description}"></small>
+                                    </div>
+                                    <form th:action="@{/admin/category/delete/{id}(id=${cat.id})}" method="post">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tags Management -->
+            <div class="col-md-6">
+                <div class="card bg-dark border-secondary h-100">
+                    <div class="card-header border-secondary d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0 text-gold">Tags</h4>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/admin/tag/add}" method="post" class="d-flex flex-column gap-2 mb-3">
+                            <input type="text" name="name" class="form-control" placeholder="New Tag Name" required>
+                            <input type="text" name="description" class="form-control" placeholder="Description (optional)">
+                            <button type="submit" class="btn btn-outline-success">Add Tag</button>
+                        </form>
+                        <button class="btn btn-outline-info btn-sm w-100" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTags" aria-expanded="false" aria-controls="collapseTags">
+                            Show / Hide Tags List
+                        </button>
+                        <div class="collapse mt-3" id="collapseTags">
+                            <ul class="list-group list-group-flush border-secondary" style="max-height: 400px; overflow-y: auto;">
+                                <li class="list-group-item bg-transparent text-white border-secondary d-flex justify-content-between align-items-center" th:each="tag : ${tags}">
+                                    <div>
+                                        <strong th:text="${tag.name}">Tag</strong>
+                                        <small class="d-block text-muted" th:text="${tag.description}">Desc</small>
+                                    </div>
+                                    <form th:action="@{/admin/tag/delete/{id}(id=${tag.id})}" method="post">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Blogs Management -->
+            <div class="col-12">
+                <div class="card bg-dark border-secondary">
+                    <div class="card-header border-secondary d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0 text-gold">Blogs</h4>
+                        <a href="/blog/draft" class="btn btn-outline-light">Write New Blog</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover align-middle">
+                                <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Author</th>
+                                    <th>Featured</th>
+                                    <th>Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="b : ${blogs}">
+                                    <td th:text="${b.title}">Title</td>
+                                    <td th:text="${b.author}">Author</td>
+                                    <td>
+                                        <span th:if="${b.featured}" class="badge bg-warning text-dark">Featured</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-2">
+                                            <a th:href="@{/blog/{id}(id=${b.id})}" class="btn btn-sm btn-outline-info">View</a>
+                                            <form th:action="@{/admin/blog/{id}/feature(id=${b.id})}" method="post" th:if="${!b.featured}">
+                                                <button type="submit" class="btn btn-sm btn-outline-light">Make Featured</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════════════════════ -->
+            <!-- Content Approval Queue                                        -->
+            <!-- Shows all submitted content organized by status (Pending,     -->
+            <!-- Approved, Rejected). Admins can approve/reject pending items  -->
+            <!-- and toggle visibility of approved content.                    -->
+            <!-- ══════════════════════════════════════════════════════════════ -->
+            <div class="col-12 mt-4">
+                <div class="card bg-dark border-secondary">
+                    <div class="card-header border-secondary d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0 text-gold"><i class="fas fa-clipboard-check me-2"></i>Content Approval</h4>
+                        <!-- Tab navigation for Pending / Approved / Rejected views -->
+                        <ul class="nav nav-pills" id="approvalTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active px-3 py-1" id="pending-tab"
+                                        data-bs-toggle="pill" data-bs-target="#pendingPane"
+                                        type="button" role="tab"
+                                        style="background: rgba(255,193,7,0.15); color: #ffc107; border: 1px solid rgba(255,193,7,0.3); font-size: 0.85rem;">
+                                    <i class="fas fa-clock me-1"></i>Pending
+                                    <!-- Badge showing count of pending items -->
+                                    <span class="badge rounded-pill ms-1"
+                                          style="background: rgba(255,193,7,0.3); color: #ffc107;"
+                                          th:text="${pendingContent != null ? pendingContent.size() : 0}">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item ms-2" role="presentation">
+                                <button class="nav-link px-3 py-1" id="approved-tab"
+                                        data-bs-toggle="pill" data-bs-target="#approvedPane"
+                                        type="button" role="tab"
+                                        style="color: #888; border: 1px solid rgba(255,255,255,0.1); font-size: 0.85rem;">
+                                    <i class="fas fa-check-circle me-1"></i>Approved
+                                </button>
+                            </li>
+                            <li class="nav-item ms-2" role="presentation">
+                                <button class="nav-link px-3 py-1" id="rejected-tab"
+                                        data-bs-toggle="pill" data-bs-target="#rejectedPane"
+                                        type="button" role="tab"
+                                        style="color: #888; border: 1px solid rgba(255,255,255,0.1); font-size: 0.85rem;">
+                                    <i class="fas fa-times-circle me-1"></i>Rejected
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="approvalTabContent">
+
+                            <!-- ─── PENDING TAB ─── -->
+                            <!-- Shows content submitted by non-admin users awaiting review -->
+                            <div class="tab-pane fade show active" id="pendingPane" role="tabpanel">
+                                <!-- Empty state when no pending content exists -->
+                                <div th:if="${pendingContent == null or pendingContent.isEmpty()}"
+                                     class="text-center text-muted py-5">
+                                    <i class="fas fa-inbox fa-3x mb-3 d-block" style="opacity: 0.3;"></i>
+                                    <p>No pending content to review.</p>
+                                </div>
+                                <!-- Pending content cards -->
+                                <div th:if="${pendingContent != null and !pendingContent.isEmpty()}"
+                                     style="max-height: 500px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #ffffff transparent;">
+                                    <div th:each="item : ${pendingContent}"
+                                         class="d-flex align-items-center justify-content-between p-3 mb-2 rounded-2"
+                                         style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);">
+                                        <!-- Content thumbnail and info -->
+                                        <div class="d-flex align-items-center gap-3 flex-grow-1">
+                                            <img th:if="${item.imageUrl}" th:src="${item.imageUrl}"
+                                                 class="rounded-2" style="width: 56px; height: 56px; object-fit: cover;">
+                                            <div th:unless="${item.imageUrl}"
+                                                 class="rounded-2 d-flex align-items-center justify-content-center"
+                                                 style="width: 56px; height: 56px; background: rgba(255,255,255,0.08);">
+                                                <i class="fas fa-file-alt" style="color: #ffffff; opacity: 0.5;"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold text-white" th:text="${item.title}">Title</div>
+                                                <small class="text-muted">
+                                                    by <span th:text="${item.author}">Author</span>
+                                                    <!-- Content type badge (Poem, Blog, or Essay) -->
+                                                    <span class="badge ms-2 px-2 py-1"
+                                                          style="background: rgba(255,255,255,0.15); color: #ffffff; font-size: 0.7rem;"
+                                                          th:text="${item.contentType}">Type</span>
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <!-- Approve / Reject / Delete action buttons -->
+                                        <div class="d-flex gap-2 flex-shrink-0">
+                                            <form th:action="@{/admin/content/{id}/approve(id=${item.id})}" method="post">
+                                                <button type="submit" class="btn btn-sm px-3"
+                                                        style="background: rgba(40,167,69,0.15); color: #28a745; border: 1px solid rgba(40,167,69,0.3);">
+                                                    <i class="fas fa-check me-1"></i>Approve
+                                                </button>
+                                            </form>
+                                            <form th:action="@{/admin/content/{id}/reject(id=${item.id})}" method="post">
+                                                <button type="submit" class="btn btn-sm px-3"
+                                                        style="background: rgba(220,53,69,0.15); color: #dc3545; border: 1px solid rgba(220,53,69,0.3);">
+                                                    <i class="fas fa-times me-1"></i>Reject
+                                                </button>
+                                            </form>
+                                            <form th:action="@{/admin/content/{id}/delete(id=${item.id})}" method="post"
+                                                  onsubmit="return confirm('Permanently delete this content?')">
+                                                <button type="submit" class="btn btn-sm px-3"
+                                                        style="background: rgba(100,0,0,0.3); color: #ff6b6b; border: 1px solid rgba(220,53,69,0.5);">
+                                                    <i class="fas fa-trash me-1"></i>Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ─── APPROVED TAB ─── -->
+                            <!-- Shows all currently public content with a toggle to hide -->
+                            <div class="tab-pane fade" id="approvedPane" role="tabpanel">
+                                <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                                    <table class="table table-dark table-hover align-middle mb-0">
+                                        <thead style="position: sticky; top: 0; z-index: 1;">
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Author</th>
+                                            <th>Type</th>
+                                            <th>Visibility</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <!-- Loop through ALL content and show only APPROVED items -->
+                                        <tr th:each="item : ${allContent}" th:if="${item.status != null and item.status.name() == 'APPROVED'}">
+                                            <td th:text="${item.title}">Title</td>
+                                            <td th:text="${item.author}">Author</td>
+                                            <td>
+                                                <span class="badge px-2 py-1"
+                                                      style="background: rgba(255,255,255,0.15); color: #ffffff;"
+                                                      th:text="${item.contentType}">Type</span>
+                                            </td>
+                                            <td>
+                                                <!-- Toggle button: clicking hides this content from public -->
+                                                <form th:action="@{/admin/content/{id}/toggle(id=${item.id})}" method="post">
+                                                    <button type="submit" class="btn btn-sm"
+                                                            style="background: rgba(40,167,69,0.15); color: #28a745; border: 1px solid rgba(40,167,69,0.3);">
+                                                        <i class="fas fa-eye me-1"></i>Public
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- ─── REJECTED TAB ─── -->
+                            <!-- Shows hidden/rejected content with option to restore -->
+                            <div class="tab-pane fade" id="rejectedPane" role="tabpanel">
+                                <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                                    <table class="table table-dark table-hover align-middle mb-0">
+                                        <thead style="position: sticky; top: 0; z-index: 1;">
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Author</th>
+                                            <th>Type</th>
+                                            <th>Visibility</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <!-- Loop through ALL content and show only REJECTED items -->
+                                        <tr th:each="item : ${allContent}" th:if="${item.status != null and item.status.name() == 'REJECTED'}">
+                                            <td th:text="${item.title}">Title</td>
+                                            <td th:text="${item.author}">Author</td>
+                                            <td>
+                                                <span class="badge px-2 py-1"
+                                                      style="background: rgba(220,53,69,0.15); color: #dc3545;"
+                                                      th:text="${item.contentType}">Type</span>
+                                            </td>
+                                            <td>
+                                                <!-- Toggle button: clicking restores this content to public -->
+                                                <form th:action="@{/admin/content/{id}/toggle(id=${item.id})}" method="post">
+                                                    <button type="submit" class="btn btn-sm"
+                                                            style="background: rgba(220,53,69,0.15); color: #dc3545; border: 1px solid rgba(220,53,69,0.3);">
+                                                        <i class="fas fa-eye-slash me-1"></i>Hidden
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab styling for active states -->
+            <style>
+                #approvalTabs .nav-link.active[data-bs-target="#pendingPane"] {
+                    background: rgba(255,193,7,0.15) !important;
+                    color: #ffc107 !important;
+                    border-color: rgba(255,193,7,0.3) !important;
+                }
+                #approvalTabs .nav-link.active[data-bs-target="#approvedPane"] {
+                    background: rgba(40,167,69,0.15) !important;
+                    color: #28a745 !important;
+                    border-color: rgba(40,167,69,0.3) !important;
+                }
+                #approvalTabs .nav-link.active[data-bs-target="#rejectedPane"] {
+                    background: rgba(220,53,69,0.15) !important;
+                    color: #dc3545 !important;
+                    border-color: rgba(220,53,69,0.3) !important;
+                }
+            </style>
+
+            <!-- Featured Page Builder -->
+            <div class="col-12 mt-4">
+                <div class="card border-0" style="background: linear-gradient(135deg, #1a1d23 0%, #12151a 100%); border: 1px solid rgba(255, 255, 255, 0.15) !important;">
+                    <div class="card-header border-0 d-flex justify-content-between align-items-center py-4" style="background: linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0%, transparent 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;">
+                        <div>
+                            <h4 class="mb-1 text-gold" style="letter-spacing: 1px;">
+                                <i class="fas fa-star me-2" style="color: #ffffff;"></i>Featured Page Builder
+                            </h4>
+                            <small class="text-muted">Select 3 categories and choose content for each to curate the featured page</small>
+                        </div>
+                        <span id="fpbSelectionCount" class="badge rounded-pill px-3 py-2" style="background: rgba(255, 255, 255, 0.15); color: #ffffff; font-size: 0.85rem;">0 / 3 categories</span>
+                    </div>
+                    <div class="card-body p-4">
+                        <form id="featuredPageForm" th:action="@{/admin/featured/save}" method="post">
+
+                            <!-- Blog Carousel Selector -->
+                            <div class="mb-4 pb-4" style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <label class="form-label text-uppercase fw-bold mb-0" style="color: #ffffff; font-size: 0.75rem; letter-spacing: 2px;">
+                                            <i class="fas fa-images me-1"></i>Carousel Blogs
+                                        </label>
+                                        <small class="text-muted d-block mt-1">Select blogs to display in the featured page hero carousel</small>
+                                    </div>
+                                    <span id="fpbBlogCount" class="badge rounded-pill px-3 py-2" style="background: rgba(255, 255, 255, 0.15); color: #ffffff; font-size: 0.8rem;">0 selected</span>
+                                </div>
+                                <div class="row g-2" id="fpbBlogList" style="max-height: 280px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #ffffff transparent;">
+                                    <div th:each="blog : ${blogs}" class="col-md-4 col-lg-3">
+                                        <div class="fpb-blog-card d-flex align-items-center gap-2 p-2 rounded-2 h-100"
+                                             th:data-blog-id="${blog.id}"
+                                             style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+                                                    cursor: pointer; transition: all 0.25s ease;"
+                                             onclick="window.__fpbToggleBlog(this)">
+                                            <img th:if="${blog.imageUrl}" th:src="${blog.imageUrl}" class="rounded-2 flex-shrink-0" style="width: 48px; height: 48px; object-fit: cover;">
+                                            <div th:unless="${blog.imageUrl}" class="rounded-2 flex-shrink-0 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(255,255,255,0.08);">
+                                                <i class="fas fa-newspaper" style="color: #ffffff; opacity: 0.5;"></i>
+                                            </div>
+                                            <div class="flex-grow-1 overflow-hidden">
+                                                <div class="fw-semibold text-white text-truncate" style="font-size: 0.82rem;" th:text="${blog.title}">Blog Title</div>
+                                                <small class="text-muted text-truncate d-block" th:text="${blog.author}">Author</small>
+                                            </div>
+                                            <div class="fpb-blog-check flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle"
+                                                 style="width: 24px; height: 24px; border: 2px solid rgba(255,255,255,0.15); transition: all 0.25s ease;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div th:if="${#lists.isEmpty(blogs)}" class="col-12">
+                                        <div class="text-center text-muted py-4">
+                                            <i class="fas fa-newspaper fa-2x mb-2 d-block" style="opacity: 0.3;"></i>
+                                            <small>No blogs available</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-4" id="categoryColumnsRow">
+
+                                <!-- Category Column 1 -->
+                                <div class="col-md-4">
+                                    <div class="fpb-column rounded-3 p-3 h-100" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); transition: border-color 0.3s ease;">
+                                        <label class="form-label text-uppercase fw-bold mb-2" style="color: #ffffff; font-size: 0.75rem; letter-spacing: 2px;">Category 1</label>
+                                        <select class="form-select fpb-category-select mb-3" name="categoryId1" data-slot="1"
+                                                style="background-color: #0d1117; color: #c9d1d9; border-color: rgba(255,255,255,0.1);">
+                                            <option value="">— Choose a category —</option>
+                                            <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}">Category</option>
+                                        </select>
+                                        <div class="fpb-content-list" data-slot="1" style="max-height: 420px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #ffffff transparent;">
+                                            <div class="text-center text-muted py-5 fpb-placeholder">
+                                                <i class="fas fa-layer-group fa-2x mb-2 d-block" style="opacity: 0.3;"></i>
+                                                <small>Select a category to see content</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Category Column 2 -->
+                                <div class="col-md-4">
+                                    <div class="fpb-column rounded-3 p-3 h-100" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); transition: border-color 0.3s ease;">
+                                        <label class="form-label text-uppercase fw-bold mb-2" style="color: #ffffff; font-size: 0.75rem; letter-spacing: 2px;">Category 2</label>
+                                        <select class="form-select fpb-category-select mb-3" name="categoryId2" data-slot="2"
+                                                style="background-color: #0d1117; color: #c9d1d9; border-color: rgba(255,255,255,0.1);">
+                                            <option value="">— Choose a category —</option>
+                                            <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}">Category</option>
+                                        </select>
+                                        <div class="fpb-content-list" data-slot="2" style="max-height: 420px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #ffffff transparent;">
+                                            <div class="text-center text-muted py-5 fpb-placeholder">
+                                                <i class="fas fa-layer-group fa-2x mb-2 d-block" style="opacity: 0.3;"></i>
+                                                <small>Select a category to see content</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Category Column 3 -->
+                                <div class="col-md-4">
+                                    <div class="fpb-column rounded-3 p-3 h-100" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); transition: border-color 0.3s ease;">
+                                        <label class="form-label text-uppercase fw-bold mb-2" style="color: #ffffff; font-size: 0.75rem; letter-spacing: 2px;">Category 3</label>
+                                        <select class="form-select fpb-category-select mb-3" name="categoryId3" data-slot="3"
+                                                style="background-color: #0d1117; color: #c9d1d9; border-color: rgba(255,255,255,0.1);">
+                                            <option value="">— Choose a category —</option>
+                                            <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}">Category</option>
+                                        </select>
+                                        <div class="fpb-content-list" data-slot="3" style="max-height: 420px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #ffffff transparent;">
+                                            <div class="text-center text-muted py-5 fpb-placeholder">
+                                                <i class="fas fa-layer-group fa-2x mb-2 d-block" style="opacity: 0.3;"></i>
+                                                <small>Select a category to see content</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- Hidden container: all content items as data for JS to read -->
+                            <div id="fpbContentData" style="display:none;">
+                                <div th:each="item : ${contentItems}" class="fpb-data-item"
+                                     th:data-id="${item.id}"
+                                     th:data-title="${item.title}"
+                                     th:data-author="${item.author}"
+                                     th:data-image="${item.imageUrl}"
+                                     th:data-description="${item.description}"
+                                     th:data-category-id="${item.category != null ? item.category.id : ''}">
+                                </div>
+                            </div>
+
+                            <!-- Hidden inputs container for selected blog + content IDs -->
+                            <div id="fpbHiddenInputs"></div>
+
+                            <!-- Save Button -->
+                            <div class="d-flex justify-content-end mt-4 pt-3" style="border-top: 1px solid rgba(255,255,255,0.06);">
+                                <button type="submit" id="fpbSaveBtn" class="btn btn-lg px-5 py-2 fw-bold disabled" disabled
+                                        style="background: linear-gradient(135deg, #ffffff 0%, #b8962e 100%); color: #0d1117; border: none; letter-spacing: 1px; transition: all 0.3s ease; opacity: 0.4;">
+                                    <i class="fas fa-save me-2"></i>Save Featured Page
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Featured Page Builder JavaScript -->
+        <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const allDataItems = document.querySelectorAll('#fpbContentData .fpb-data-item');
+            const selects = document.querySelectorAll('.fpb-category-select');
+            const saveBtn = document.getElementById('fpbSaveBtn');
+            const countBadge = document.getElementById('fpbSelectionCount');
+            const blogCountBadge = document.getElementById('fpbBlogCount');
+            const hiddenInputs = document.getElementById('fpbHiddenInputs');
+
+            // Track selected content per slot and selected blogs
+            const selectedContent = { 1: new Set(), 2: new Set(), 3: new Set() };
+            const selectedBlogs = new Set();
+
+            // Build content items array from hidden data
+            const contentItems = [];
+            allDataItems.forEach(el => {
+                contentItems.push({
+                    id: el.dataset.id,
+                    title: el.dataset.title || 'Untitled',
+                    author: el.dataset.author || 'Unknown',
+                    image: el.dataset.image || '',
+                    description: el.dataset.description || '',
+                    categoryId: el.dataset.categoryId || ''
+                });
+            });
+
+            // Toggle blog selection
+            window.__fpbToggleBlog = function(card) {
+                const blogId = card.dataset.blogId;
+                const circle = card.querySelector('.fpb-blog-check');
+
+                if (selectedBlogs.has(blogId)) {
+                    selectedBlogs.delete(blogId);
+                    card.style.background = 'rgba(255,255,255,0.03)';
+                    card.style.borderColor = 'rgba(255,255,255,0.06)';
+                    circle.style.borderColor = 'rgba(255,255,255,0.15)';
+                    circle.style.background = 'transparent';
+                    circle.innerHTML = '';
+                } else {
+                    selectedBlogs.add(blogId);
+                    card.style.background = 'rgba(255,255,255,0.08)';
+                    card.style.borderColor = 'rgba(255,255,255,0.3)';
+                    circle.style.borderColor = '#ffffff';
+                    circle.style.background = '#ffffff';
+                    circle.innerHTML = '<i class="fas fa-check" style="font-size: 0.65rem; color: #0d1117;"></i>';
+                }
+                updateState();
+            };
+
+            // Disable already-selected categories in other dropdowns
+            function syncDropdowns() {
+                const chosen = {};
+                selects.forEach(sel => {
+                    if (sel.value) chosen[sel.value] = sel.dataset.slot;
+                });
+
+                selects.forEach(sel => {
+                    const slot = sel.dataset.slot;
+                    Array.from(sel.options).forEach(opt => {
+                        if (!opt.value) return;
+                        opt.disabled = (chosen[opt.value] && chosen[opt.value] !== slot);
+                        opt.style.opacity = opt.disabled ? '0.35' : '1';
+                    });
+                });
+            }
+
+            // Render content cards for a given slot
+            function renderContentList(slot, categoryId) {
+                const container = document.querySelector(`.fpb-content-list[data-slot="${slot}"]`);
+                selectedContent[slot].clear();
+
+                if (!categoryId) {
+                    container.innerHTML = `
+                        <div class="text-center text-muted py-5 fpb-placeholder">
+                            <i class="fas fa-layer-group fa-2x mb-2 d-block" style="opacity: 0.3;"></i>
+                            <small>Select a category to see content</small>
+                        </div>`;
+                    updateState();
+                    return;
+                }
+
+                const matching = contentItems.filter(item => item.categoryId === categoryId);
+
+                if (matching.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-inbox fa-2x mb-2 d-block" style="opacity: 0.3;"></i>
+                            <small>No content in this category</small>
+                        </div>`;
+                    updateState();
+                    return;
+                }
+
+                container.innerHTML = matching.map(item => `
+                    <div class="fpb-content-card d-flex align-items-center gap-3 p-2 mb-2 rounded-2"
+                         data-item-id="${item.id}" data-slot="${slot}"
+                         style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+                                cursor: pointer; transition: all 0.25s ease; position: relative; overflow: hidden;"
+                         onclick="window.__fpbToggle(this)">
+                        ${item.image
+                            ? `<img src="${item.image}" class="rounded-2 flex-shrink-0" style="width: 56px; height: 56px; object-fit: cover;">`
+                            : `<div class="rounded-2 flex-shrink-0 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px; background: rgba(255,255,255,0.08);"><i class="fas fa-file-alt" style="color: #ffffff; opacity: 0.5;"></i></div>`
+                        }
+                        <div class="flex-grow-1 overflow-hidden">
+                            <div class="fw-semibold text-white text-truncate" style="font-size: 0.9rem;">${item.title}</div>
+                            <small class="text-muted text-truncate d-block">${item.author}</small>
+                        </div>
+                        <div class="fpb-check-circle flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle"
+                             style="width: 28px; height: 28px; border: 2px solid rgba(255,255,255,0.15); transition: all 0.25s ease;">
+                        </div>
+                    </div>
+                `).join('');
+
+                updateState();
+            }
+
+            // Toggle selection on a content card
+            window.__fpbToggle = function(card) {
+                const slot = parseInt(card.dataset.slot);
+                const itemId = card.dataset.itemId;
+                const circle = card.querySelector('.fpb-check-circle');
+
+                if (selectedContent[slot].has(itemId)) {
+                    selectedContent[slot].delete(itemId);
+                    card.style.background = 'rgba(255,255,255,0.03)';
+                    card.style.borderColor = 'rgba(255,255,255,0.06)';
+                    circle.style.borderColor = 'rgba(255,255,255,0.15)';
+                    circle.style.background = 'transparent';
+                    circle.innerHTML = '';
+                } else {
+                    selectedContent[slot].add(itemId);
+                    card.style.background = 'rgba(255,255,255,0.08)';
+                    card.style.borderColor = 'rgba(255,255,255,0.3)';
+                    circle.style.borderColor = '#ffffff';
+                    circle.style.background = '#ffffff';
+                    circle.innerHTML = '<i class="fas fa-check" style="font-size: 0.7rem; color: #0d1117;"></i>';
+                }
+                updateState();
+            };
+
+            // Update badge counts, save button state, column glow, and hidden inputs
+            function updateState() {
+                let filledSlots = 0;
+                let totalContentSelected = 0;
+                selects.forEach(sel => { if (sel.value) filledSlots++; });
+                Object.values(selectedContent).forEach(s => totalContentSelected += s.size);
+
+                countBadge.textContent = filledSlots + ' / 3 categories';
+                countBadge.style.background = filledSlots === 3
+                    ? 'rgba(40, 167, 69, 0.2)' : 'rgba(255, 255, 255, 0.15)';
+                countBadge.style.color = filledSlots === 3 ? '#28a745' : '#ffffff';
+
+                blogCountBadge.textContent = selectedBlogs.size + ' selected';
+                blogCountBadge.style.background = selectedBlogs.size > 0
+                    ? 'rgba(40, 167, 69, 0.2)' : 'rgba(255, 255, 255, 0.15)';
+                blogCountBadge.style.color = selectedBlogs.size > 0 ? '#28a745' : '#ffffff';
+
+                const canSave = filledSlots === 3 && totalContentSelected > 0 && selectedBlogs.size > 0;
+                saveBtn.disabled = !canSave;
+                saveBtn.classList.toggle('disabled', !canSave);
+                saveBtn.style.opacity = canSave ? '1' : '0.4';
+
+                // Update column border glow
+                document.querySelectorAll('.fpb-column').forEach((col, i) => {
+                    const slot = i + 1;
+                    const hasCategory = selects[i].value !== '';
+                    const hasContent = selectedContent[slot].size > 0;
+                    if (hasCategory && hasContent) {
+                        col.style.borderColor = 'rgba(40, 167, 69, 0.3)';
+                    } else if (hasCategory) {
+                        col.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                    } else {
+                        col.style.borderColor = 'rgba(255,255,255,0.06)';
+                    }
+                });
+
+                // Rebuild hidden inputs for blogs and content
+                hiddenInputs.innerHTML = '';
+                selectedBlogs.forEach(id => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'blogIds';
+                    input.value = id;
+                    hiddenInputs.appendChild(input);
+                });
+                for (let slot = 1; slot <= 3; slot++) {
+                    selectedContent[slot].forEach(id => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'contentIds' + slot;
+                        input.value = id;
+                        hiddenInputs.appendChild(input);
+                    });
+                }
+            }
+
+            // Wire up category selects
+            selects.forEach(sel => {
+                sel.addEventListener('change', function() {
+                    const slot = this.dataset.slot;
+                    syncDropdowns();
+                    renderContentList(parseInt(slot), this.value);
+                });
+            });
+
+        });
+        </script>
+    </div>
+</div>
+
+<!-- Blog List Template -->
+<div th:fragment="blogListingPage">
+    <!-- Hero / Featured Blog -->
+    <div th:if="${featuredBlog != null}" class="container-fluid p-0 mb-5 position-relative bg-dark text-white text-center" 
+         th:style="'background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(' + ${featuredBlog.imageUrl} + ') center / cover; min-height: 50vh; display: flex; flex-direction: column; justify-content: center; align-items: center;'">
+        <span class="badge bg-warning text-dark mb-3 px-3 py-2 text-uppercase fw-bold" style="letter-spacing: 2px;">Featured</span>
+        <h1 class="display-3 fw-bold mb-3" th:text="${featuredBlog.title}">Featured Title</h1>
+        <p class="lead w-50 mx-auto fst-italic mb-4" th:text="${featuredBlog.description}">Description</p>
+        <a th:href="@{/blog/{id}(id=${featuredBlog.id})}" class="btn btn-outline-light btn-lg px-5">Read More</a>
+    </div>
+    
+    <div th:if="${featuredBlog == null}" class="container-fluid p-5 mb-5 bg-dark text-white text-center">
+        <h1 class="display-4 fw-bold">The Midnight Blog</h1>
+        <p class="lead">Explore our collection of essays, poetry, and thoughtful writing.</p>
+    </div>
+
+    <!-- Blog Grid -->
+    <div class="container pb-5">
+        <div class="row mb-4">
+            <div class="col">
+                <h2 class="border-bottom border-secondary pb-2 text-gold">Latest Articles</h2>
+            </div>
+        </div>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            <div class="col" th:each="b : ${blogs}" th:if="${featuredBlog == null or b.id != featuredBlog.id}">
+                <a th:href="@{/blog/{id}(id=${b.id})}" class="text-decoration-none">
+                    <div class="card custom-card h-100 bg-dark text-white border-secondary transition-hover">
+                        <img loading="lazy" th:src="${b.imageUrl}" class="card-img-top object-fit-cover" alt="Blog Image" style="height: 250px;">
+                        <div class="card-body p-4 d-flex flex-column">
+                            <h4 class="card-title text-gold mb-3" th:text="${b.title}">Title</h4>
+                            <p class="card-text text-muted fst-italic mb-4 flex-grow-1" th:text="${b.description}">Description...</p>
+                            <div class="d-flex justify-content-between align-items-center mt-auto border-top border-secondary pt-3">
+                                <small class="text-white-50" th:text="${b.author}">Author</small>
+                                <span class="text-warning">Read <i class="fas fa-arrow-right ms-1"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <div th:if="${#lists.isEmpty(blogs)}" class="text-center text-muted py-5">
+            <i class="fas fa-pen-nib fa-3x mb-3 text-secondary"></i>
+            <h3>No blogs published yet.</h3>
+            <p>Check back later for new content!</p>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Page -->
+<div th:if="${page != null}" th:fragment="featuredPage" class="container-fluid d-flex h-auto flex-column gap-5 pb-5" style="transform: scale(1);background: #101317;">
+    <div class="carousel slide mb-5" data-bs-ride="carousel" id="carousel-1" style="height: 600px;">
+        <div class="carousel-inner h-100">
+            <div th:each="blog : ${page.featuredBlogs}" class="carousel-item active h-100"><img fetchpriority="high"
+                    class="object-fit-cover w-100 d-block position-absolute h-100" th:src="${blog.imageUrl}"
+                    alt="Slide Image" style="z-index: -1;">
+                <div class="container d-flex h-100 flex-column justify-content-center">
+                    <div class="row">
+                        <div class="col-md-6 col-xl-4 offset-md-2">
+                            <div style="max-width: 350px;">
+                                <h1 th:text="${blog.title}" class="text-uppercase fw-bold">Title<br></h1>
+                                <p class="my-3" th:text="${blog.description}"></p><a
+                                    class="mb-2 btn btn-primary btn-lg me-2 featuredBlogButtonRead" role="button" style="position: relative; z-index: 10;"
+                                    th:href="@{/blog/{id}(id=${blog.id})}">Read</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div><a class="carousel-control-prev" role="button" data-bs-slide="prev" href="#carousel-1"><span
+                class="carousel-control-prev-icon"></span><span class="visually-hidden">Previous</span></a><a
+                class="carousel-control-next" role="button" data-bs-slide="next" href="#carousel-1"><span
+                class="carousel-control-next-icon"></span><span class="visually-hidden">Next</span></a></div>
+        <div class="carousel-indicators"><button type="button" data-bs-target="#carousel-1" data-bs-slide-to="0"
+                                                 class="active"></button> <button type="button" data-bs-target="#carousel-1" data-bs-slide-to="1"></button>
+            <button type="button" data-bs-target="#carousel-1" data-bs-slide-to="2"></button></div>
+    </div>
+
+    <!-- Category Section -->
+    <div th:each="category: ${page.categoriesContentMaps}" class="row d-flex flex-column px-4 px-md-5"
+         style="color: var(--bs-white);">
+        <div class="col">
+            <h1 style="font-size: 55px;" th:text="${category.key.name}">Category Name</h1>
+            <div class="card-group gap-4">
+                <div th:each="contentItem: ${category.value}" class="card border-0">
+                    <a th:href="@{${contentItem.url}}" class="text-decoration-none text-light">
+                        <img loading="lazy" th:src="${contentItem.imageUrl}" class="img-fluid card-img-top w-100 d-block" style="height: 250px; object-fit: cover;">
+                        <div class="card-body" style="background: #161616;">
+                            <h4 class="card-title" th:text="${contentItem.title}">Title</h4>
+                            <p class="small mb-2" style="color: #ffffff;">
+                                <span th:text="${contentItem.genre?.name}">Genre</span> | <span th:text="${contentItem.author}">Author</span>
+                            </p>
+                            <p class="card-text opacity-75" th:text="${contentItem.description}">Description</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-5 mb-5 pb-4">
+        <div class="col text-center">
+            <a th:href="@{/genre}" class="btn btn-outline-light btn-lg px-5 rounded-pill" style="color: #ffffff; border-color: #ffffff;">View All Categories</a>
+        </div>
+    </div>
+</div>
+
+<!-- About Template -->
+<div th:fragment="aboutTemplate" class="container min-vh-100 py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0" style="background: linear-gradient(135deg, #1a1d23 0%, #12151a 100%); border: 1px solid rgba(255, 255, 255, 0.15) !important;">
+                <div class="card-body p-5 text-center text-light">
+                    <h1 class="display-4 text-gold mb-4" style="color: #ffffff;"><i class="fas fa-book-open me-3"></i>About Us</h1>
+                    <hr class="border-gold opacity-25 mb-4" style="border-color: #ffffff;">
+                    
+                    <p class="lead mb-4" style="line-height: 1.8;">
+                        Welcome to The Midnight Notebook
+                    </p>
+                    
+                    <div class="text-start mt-5">
+                        <h3 class="h4 text-gold mb-3" style="color: #ffffff;">Why was this Created? </h3>
+                        <p style="line-height: 1.8; color: #c9d1d9;">
+                            Originally this website was for poems only. Poems are raw expressions of memory and experience.
+                            Truth can be seaved from these. My hope was to distance me and other seekers for creating work
+                            which is authentic and rightly ordered. If there is any sense of truth in you and can't find it
+                            in pop culture or agenda based art, this place is for you. The poems give the material and the essays
+                            and blogs refine it. Later on I plan to make a mechanism for synthesizing various categories and genres
+                            to create a system for understanding the world.
+                        </p>
+                        
+                        <h3 class="h4 text-gold mt-4 mb-3" style="color: #ffffff;">Contact me by Email @edavidpinedam@gmail.com</h3>
+                    </div>
+                    
+                    <div class="mt-5 pt-4 border-top" style="border-color: rgba(255,255,255,0.1) !important;">
+                        <a th:href="@{/featured}" class="btn btn-lg px-5 py-3 rounded-pill fw-bold" style="background: linear-gradient(135deg, #ffffff 0%, #b8962e 100%); color: #0d1117; border: none;">
+                            Explore Featured Content
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Content Template -->
+<div th:fragment="editContentTemplate" class="publish-page">
+    <div class="container-fluid h-100 p-5 d-flex flex-column">
+
+        <!-- Heading -->
+        <div class="row mb-4">
+            <div class="col text-center">
+                <h1>Edit Content</h1>
+            </div>
+        </div>
+
+        <div class="row flex-grow-1">
+            <form th:action="@{/content/edit}" th:object="${editObject}" method="post" enctype="multipart/form-data"
+                  class="row g-4 w-100">
+
+                <input type="hidden" th:field="*{id}">
+                <input type="hidden" th:field="*{typeField}">
+
+                <!-- Left Column: Author, Title, Genre -->
+                <div class="col-md-3 d-flex flex-column gap-4">
+                    <input class="form-control publish-input" type="text"
+                           th:field="*{author}" placeholder="Author">
+                    <input class="form-control publish-input" type="text"
+                           th:field="*{title}" placeholder="Title">
+
+                    <!-- Genre Dropdown -->
+                    <select class="form-select publish-input" th:field="*{genreId}" required>
+                        <option value="">-- Select Genre --</option>
+                        <option th:each="g : ${genres}"
+                                th:value="${g.id}"
+                                th:text="${g.name}">Genre</option>
+                    </select>
+
+                </div>
+
+                <!-- Right Column: Editor -->
+                <div class="col-md-9 d-flex flex-column gap-3">
+                    <textarea id="editor" th:field="*{body}" style="visibility:hidden;"></textarea>
+                    <div class="d-flex justify-content-center">
+                        <button class="btn btn-primary px-5" type="submit">
+                            <i class="far fa-save"></i> Save Changes
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.tiny.cloud/1/s7h7wpnw1wklaqd40bcv60e7ap957cy80wniq73fnglu7zl1/tinymce/8/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        tinymce.init({
+            selector: '#editor',
+            height: 400,
+            plugins: 'lists link image table',
+            toolbar: 'undo redo | blocks | bold italic underline | bullist numlist | link image table',
+
+            file_picker_types: 'image',
+
+            file_picker_callback: function(callback) {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+
+                input.onchange = function() {
+                    const file = input.files[0];
+
+                    const reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        callback(e.target.result, {
+                            alt: file.name
+                        });
+                    };
+
+                    reader.readAsDataURL(file);
+                };
+
+                input.click();
+            },
+
+            setup: function(editor) {
+                editor.on('change', function() {
+                    editor.save();
+                });
+            }
+        });
+    </script>
+</div>
+
+<!-- Admin Content Management Template -->
+<div th:fragment="adminContentManagementTemplate" style="min-height: 100vh; background-color: #101317; padding: 4rem 0;">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h1 style="color: #ffffff; font-size: 2.2rem; letter-spacing: 2px; text-transform: uppercase;">Content Management</h1>
+                <p style="color: #888; margin: 0;">View, edit genres, toggle visibility, and permanently delete content.</p>
+            </div>
+            <a href="/admin" class="btn btn-outline-secondary px-4">← Back to Dashboard</a>
+        </div>
+
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div style="background: rgba(26,29,35,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden;">
+            <table class="table table-dark table-hover align-middle mb-0">
+                <thead style="background: rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.2);">
+                    <tr>
+                        <th style="color: #ffffff; padding: 1rem 1.5rem;">Title</th>
+                        <th style="color: #ffffff; padding: 1rem;">Author</th>
+                        <th style="color: #ffffff; padding: 1rem;">Type</th>
+                        <th style="color: #ffffff; padding: 1rem;">Genre / Category</th>
+                        <th style="color: #ffffff; padding: 1rem;">Status</th>
+                        <th style="color: #ffffff; padding: 1rem;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="item : ${allContent}" style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                        <td style="padding: 1rem 1.5rem; font-weight: 600;">
+                            <a th:href="${item.url}" target="_blank" class="text-white text-decoration-none" th:text="${item.title}">Title</a>
+                        </td>
+                        <td style="padding: 1rem; color: #c9d1d9;" th:text="${item.author}">Author</td>
+                        <td style="padding: 1rem; color: #888;" th:text="${item.contentType}">Blog</td>
+                        <td style="padding: 1rem;">
+                            <span th:text="${item.genre != null ? item.genre.name : 'None'}">Genre</span><br>
+                            <small class="text-white-50" th:text="${item.category != null ? '(' + item.category.name + ')' : '(No Cat)'}">Cat</small>
+                        </td>
+                        <td style="padding: 1rem;">
+                            <span class="badge rounded-pill px-3 py-1"
+                                  th:style="${item.status.name() == 'APPROVED'} ? 'background: rgba(40,167,69,0.2); color: #28a745; border: 1px solid rgba(40,167,69,0.3);' : (${item.status.name() == 'PENDING'} ? 'background: rgba(255,193,7,0.2); color: #ffc107; border: 1px solid rgba(255,193,7,0.3);' : 'background: rgba(220,53,69,0.2); color: #dc3545; border: 1px solid rgba(220,53,69,0.3);')"
+                                  th:text="${item.status}">APPROVED</span>
+                        </td>
+                        <td style="padding: 1rem;">
+                            <div class="d-flex gap-2">
+                                <!-- Move Genre Modal Trigger -->
+                                <button type="button" class="btn btn-sm btn-outline-info"
+                                        data-bs-toggle="modal" th:data-bs-target="'#moveGenreModal-' + ${item.id}">
+                                    <i class="fas fa-exchange-alt"></i> Move
+                                </button>
+                                
+                                <form th:action="@{/admin/content/{id}/toggle(id=${item.id})}" method="post">
+                                    <button type="submit" class="btn btn-sm btn-outline-light">
+                                        <i class="fas" th:classappend="${item.status.name() == 'APPROVED'} ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                        <span th:text="${item.status.name() == 'APPROVED'} ? 'Hide' : 'Show'"></span>
+                                    </button>
+                                </form>
+
+                                <form th:action="@{/admin/content/{id}/delete(id=${item.id})}" method="post"
+                                      onsubmit="return confirm('Permanently delete this content?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Move Genre Modal -->
+                            <div class="modal fade" th:id="'moveGenreModal-' + ${item.id}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content bg-dark text-white border-secondary">
+                                        <div class="modal-header border-secondary">
+                                            <h5 class="modal-title">Move Content: <span th:text="${item.title}"></span></h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <form th:action="@{/admin/content/{id}/moveGenre(id=${item.id})}" method="post">
+                                            <div class="modal-body d-flex flex-column gap-3">
+                                                <label class="text-white-50">Select New Genre:</label>
+                                                <select name="genreId" class="form-select bg-dark text-white border-secondary" required>
+                                                    <option value="" disabled selected>-- Select a Genre --</option>
+                                                    <option th:each="g : ${genres}" 
+                                                            th:value="${g.id}" 
+                                                            th:text="${g.name}"
+                                                            th:selected="${item.genre != null and item.genre.id == g.id}">
+                                                    </option>
+                                                </select>
+                                                <small class="text-warning"><i class="fas fa-exclamation-triangle"></i> Moving the genre will also update the category to match the new genre's category.</small>
+                                            </div>
+                                            <div class="modal-footer border-secondary">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-info">Move Content</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
