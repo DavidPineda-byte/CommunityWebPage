@@ -1,5 +1,7 @@
 package com.DavidsCode.CommunityWebPage.service;
 
+import com.DavidsCode.CommunityWebPage.entity.Category;
+import com.DavidsCode.CommunityWebPage.entity.Genre;
 import com.DavidsCode.CommunityWebPage.entity.Poem;
 
 import java.util.List;
@@ -7,9 +9,11 @@ import java.util.Optional;
 
 public interface poemService {
 
-    public Poem getPoemByAuthor(String author);
-    public Poem getPoemById(Long id);
-    public Poem getPoemByTitle(String title);
-    public void addPoem(Poem poem);
-    public List<Poem> getAllPoems();
+    Poem getPoemByAuthor(String author);
+    Poem getPoemById(Long id);
+    Poem getPoemByTitle(String title);
+    void addPoem(Poem poem);
+    List<Poem> getAllPoems();
+    List<Poem> getPoemsByGenre(Genre genre);
+    List<Poem> getPoemsByCategory(Category category);
 }

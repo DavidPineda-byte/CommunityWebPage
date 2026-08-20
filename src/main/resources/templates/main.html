@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>The Midnight Notebook</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <!-- Unified CSS -->
+    <link rel="stylesheet" th:href="@{/css/main.css(v=${#dates.createNow().time})}">
+    <!-- Mobile Overrides (applied on top of main.css for screens ≤ 768px) -->
+    <link rel="stylesheet" th:href="@{/css/mobile.css(v=${#dates.createNow().time})}">
+</head>
+<body>
+<div id="outerContainer" class="container-fluid">
+<nav id="mainNav" class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top border-bottom border-body shadow-sm">
+    <div class="container-fluid d-flex align-items-center">
+
+        <!-- Logo (Left-most) -->
+        <a class="navbar-brand brand-logo me-4" href="/">
+            The Midnight Notebook
+        </a>
+
+        <!-- Hamburger Menu Button -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <!-- Search Bar (Right next to the logo text) -->
+            <div class="search-wrapper me-auto my-2 my-lg-0">
+                <form id="poemSearchForm" class="d-flex" autocomplete="off" onsubmit="return false;">
+                    <input id="searchBar" class="form-control" type="search" placeholder="Search poems...">
+                </form>
+                <div id="optionsContainer"></div>
+            </div>
+
+            <!-- Right group: Admin buttons and Login/Logout -->
+            <div class="d-flex align-items-lg-center flex-column flex-lg-row ms-auto mt-3 mt-lg-0">
+                <!-- Admin Dashboard Button -->
+                <div sec:authorize="hasRole('ADMIN')" class="me-3 mb-2 mb-lg-0">
+                    <a href="/admin" class="btn btn-outline-light w-100 text-nowrap">Admin Dashboard</a>
+                </div>
+
+                <!-- My Works Button (visible to authenticated non-admin users) -->
+                <div sec:authorize="isAuthenticated() and !hasRole('ADMIN')" class="me-3 mb-2 mb-lg-0">
+                    <a href="/my-works" class="btn btn-outline-info w-100 text-nowrap">My Works</a>
+                </div>
+
+                <!-- Navigation Links -->
+                <ul id="nav-options" class="navbar-nav align-items-lg-center gap-2 gap-lg-4">
+                    <li class="nav-item w-100 text-center">
+                        <a class="btn btn-outline-light w-100" href="/about">About</a>
+                    </li>
+                    <li class="nav-item w-100 text-center">
+                        <a class="btn btn-outline-light w-100" th:href="@{/featured}">Featured</a>
+                    </li>
+                    <li class="nav-item w-100 text-center">
+                        <a class="btn btn-gold w-100 text-nowrap" href="/publish">Publish</a>
+                    </li>
+                    <li class="nav-item w-100 text-center" sec:authorize="!isAuthenticated()">
+                        <a class="btn btn-outline-light w-100 text-nowrap" href="/register">Sign Up</a>
+                    </li>
+                    <li class="nav-item w-100 text-center" sec:authorize="!isAuthenticated()">
+                        <a class="btn btn-outline-light w-100" href="/login">Login</a>
+                    </li>
+                    <li class="nav-item w-100 text-center" sec:authorize="isAuthenticated()">
+                        <form th:action="@{/logout}" method="post" class="d-inline w-100">
+                            <button type="submit" class="btn btn-outline-light w-100">Logout</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main class="container-fluid" style="min-height: 80vh;">
+    <!-- THE MAGIC LINE: Dynamically loads the specific fragment based on 'view' variable -->
+    <div th:replace="~{fragments/content :: ${view}}"></div>
+</main>
+
+<!-- Footer with Copyright Notice -->
+<footer class="bg-dark text-center text-white py-2 mt-auto border-top border-secondary">
+    <div class="container">
+        <p class="mb-0" style="color: #c9d1d9;">
+            &copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> The Midnight Notebook. All Rights Reserved.
+        </p>
+        <small class="text-muted">
+            All content published on this platform remains the intellectual property of its respective authors.
+        </small>
+    </div>
+</footer>
+
+</div>
+
+<!-- Modals & Scripts -->
+<div class="modal fade" id="addGenreModal" tabindex="-1" th:if="${view == 'genres'}">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-gold border-secondary">
+            <form th:action="@{/admin/genre/add}" method="post" enctype="multipart/form-data">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">Add Genre</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body d-flex flex-column gap-3">
+                    <input class="form-control" name="name" type="text" placeholder="Genre name" required>
+                    <select name="categoryId" class="form-select" style="background-color: #1a1a1a; color: #f5f5f5; border-color: rgba(230,199,161,0.2);">
+                        <option value="" selected>— Assign to a Category (optional) —</option>
+                        <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option>
+                    </select>
+                    <label class="text-white-50 small mb-0">Upload image file:</label>
+                    <input class="form-control" name="imageFile" type="file" accept="image/*">
+                    <label class="text-white-50 small mb-0">— or paste an image URL —</label>
+                    <input class="form-control" name="imageUrl" type="url" placeholder="https://...">
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-gold">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script defer th:src="@{/js/imagePurchase.js(v=${#dates.createNow().time})}"></script>
+<script defer th:src="@{/js/liveSearchBar.js(v=${#dates.createNow().time})}"></script>
+
+</body>
+</html>

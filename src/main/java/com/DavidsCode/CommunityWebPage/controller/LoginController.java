@@ -7,11 +7,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class LoginController {
 
     @GetMapping("/login")
-    public String showLoginForm() {
-        return "login";
+    public String showLoginForm(org.springframework.ui.Model model) {
+        model.addAttribute("view", "login");
+        return "main";
     }
-    @GetMapping("/welcome")
-    public String showWelcomePage() {
-        return "welcome.html";
-    }
+
 }

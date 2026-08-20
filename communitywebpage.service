@@ -1,0 +1,13 @@
+[Unit]
+Description=Community Web Page Spring Boot App
+After=syslog.target network.target
+
+[Service]
+User=ubuntu
+ExecStart=/usr/bin/java -jar /home/ubuntu/app.jar
+SuccessExitStatus=143
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

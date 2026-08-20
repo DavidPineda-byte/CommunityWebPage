@@ -18,7 +18,8 @@ public class RegistrationController {
     @GetMapping("/register")
     public String showRegistrationForm(Model model) {
         model.addAttribute("user", new User());
-        return "register";
+        model.addAttribute("view", "register");
+        return "main";
     }
 
     @PostMapping("/register")
@@ -26,10 +27,16 @@ public class RegistrationController {
         try {
             userServiceImpl.registerUser(user);
             model.addAttribute("message", "Registration successful! Please login.");
-            return "login";
+            model.addAttribute("view", "login");
+            return "main";
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("error", e.getMessage());
+            model.addAttribute("view", "register");
+            return "main";
         } catch (Exception e) {
             model.addAttribute("error", "An error occurred during registration. Please try again later.");
-            return "register";
+            model.addAttribute("view", "register");
+            return "main";
         }
     }
 }

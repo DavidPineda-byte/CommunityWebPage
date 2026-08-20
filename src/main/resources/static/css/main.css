@@ -1,0 +1,352 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap');
+
+/* ===================== GLOBAL BASE ===================== */
+
+body {
+  background: radial-gradient(circle at top, #111111, #000000);
+  color: #ffffff;
+  font-family: "Space Grotesk", sans-serif;
+  height: 100vh;
+  margin: 0;
+  overflow: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Space Grotesk", serif;
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.15);
+}
+
+.text-gold {
+  color: #ffffff;
+}
+
+#outerContainer{
+padding-right:0px;
+padding-left:0px;
+background-color: #101317;
+height: 100vh;
+display: flex;
+flex-direction: column;
+overflow: hidden;
+}
+
+main.container-fluid {
+  flex: 1;
+  overflow-y: auto;
+  padding-left: 0;
+  padding-right: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+main.container-fluid > div {
+  flex: 1;
+  min-height: 0;
+}
+
+/* ===================== GLOBAL: CARDS ===================== */
+.custom-card {
+  background-color: #161616;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  border-radius: 14px;
+  transition: all 0.3s ease;
+  color: #ffffff;
+}
+
+.custom-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 15px 35px rgba(255, 255, 255, 0.18);
+}
+
+/* ===================== GLOBAL: FORMS & BUTTONS ===================== */
+.form-control {
+  background-color: #1a1a1a !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #f5f5f5 !important;
+}
+
+.form-control:focus {
+  border-color: #ffffff !important;
+  box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.15) !important;
+}
+
+.btn-gold {
+  background-color: transparent;
+  border: 1px solid #ffffff;
+  color: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.btn-gold:hover {
+  background-color: #ffffff;
+  color: #000;
+}
+
+/* ===================== NAVBAR ===================== */
+#mainNav {
+  min-height: 90px;
+  background-color: #101317 !important;
+  border-bottom: 3px solid #30465d !important;
+}
+
+#mainNav .navbar-brand {
+  padding-left: 40px;
+  font-family: "Space Grotesk", serif;
+  font-weight: 900;
+  font-size: clamp(1.2rem, 2.2vw, 2.2rem) !important;
+  color: #f5f5f5 !important;
+  text-transform: uppercase;
+  letter-spacing: clamp(1px, 0.4vw, 6px);
+}
+
+#nav-options{
+padding-right:30px;
+}
+
+.nav-link {
+  color: rgba(255, 255, 255, 0.8) !important;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #ffffff !important;
+}
+
+.search-wrapper {
+  position: relative;
+}
+
+#poemSearchForm input {
+  max-width: 300px;
+}
+#searchBar::placeholder{
+  color: white;
+}
+
+#optionsContainer {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-width: 300px;
+  background-color: #161616;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  max-height: 250px;
+  overflow-y: auto;
+  z-index: 1050;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  margin-top: 5px;
+}
+
+#optionsContainer:empty {
+  display: none;
+}
+
+#optionsContainer div {
+  padding: 10px 15px;
+  color: #ffffff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.95rem;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+#optionsContainer div:last-child {
+  border-bottom: none;
+}
+
+#optionsContainer div:hover {
+  background-color: #ffffff;
+  color: #ffffff;
+}
+
+/* ===================== HOME / LANDING PAGE ===================== */
+.landing-page {
+    height: 100%;
+    color: white;
+}
+
+.landing-page-hero {
+    position: relative;
+    overflow: hidden;
+}
+
+.landing-page-title {
+    color: var(--bs-light-bg-subtle);
+    font-size: clamp(3rem, 6vw, 5.5rem);
+    line-height: 1.05;
+}
+
+.landing-page-subtitle {
+    color: var(--bs-white);
+    font-size: clamp(1rem, 1.5vw, 1.25rem);
+}
+
+/* ===================== GENRES PAGE ===================== */
+#galleryOuterContainer{
+ position: relative;
+    background-image: url("../assets/img/divingGirl.jpg");
+    background-size:cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    height: 100%;
+    overflow-y: auto;
+}
+#gallerHeader{
+font-size: 4rem;
+}
+
+
+#card-container{
+padding-right:7px;
+padding-left:7px;
+gap: 16px;
+font-size: clamp(1rem, 3vw, 3rem);
+margin-top:75px;
+}
+
+.genre-card {
+  min-width: 150px !important;
+  min-height: 150px !important;
+  display: flex;
+  justify-content: center;
+  align-items: center !important;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.genre-card .card-body {
+  width: 100%;
+  padding-bottom: 1rem;
+}
+.genre-card .card-title{
+  font-size: clamp(0.75rem, 1.2vw, 1rem);
+  text-align: center;
+}
+
+/* ===================== POEMS PAGE ===================== */
+.poem-card {
+  cursor: pointer;
+}
+
+/* ===================== GENRE TEMPLATE PAGE ===================== */
+.genre-template-page {
+  background: linear-gradient(135deg, #101317 0%, #162433 100%);
+  overflow-y: auto;
+}
+
+.genre-template-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* ===================== READ POEM PAGE ===================== */
+#poem-displayBody {
+  white-space: pre-wrap;
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 15px;
+}
+
+/* Custom Scrollbar for Poem Body */
+#poem-displayBody::-webkit-scrollbar {
+  width: 8px;
+}
+
+#poem-displayBody::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+#poem-displayBody::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#poem-displayBody::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* ===================== AUTH PAGES (LOGIN / REGISTER / ADD POEM) ===================== */
+.auth-container {
+  max-width: 500px;
+  margin: 100px auto;
+  padding: 40px;
+  background-color: #0f0f0f;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 15px;
+}
+
+/* ===================== PUBLISH PAGE ===================== */
+.publish-page {
+  background-color: #101317;
+  color: var(--bs-white);
+  overflow-y: auto;
+}
+
+.publish-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Global Placeholder Visibility Fix */
+::-webkit-input-placeholder {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+::-moz-placeholder {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+:-ms-input-placeholder {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+::placeholder {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.publish-input {
+  background-color: #1a1a2e !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+}
+
+.publish-input:focus {
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.08) !important;
+}
+/* ============== Posted Blog ================== */
+#postedBlogBody{
+background-color:white;
+color:black;
+}
+
+/* ============== Choices.js Overrides ============== */
+.choices__inner {
+  background-color: #1a1a1a !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #f5f5f5 !important;
+}
+.choices__input {
+  background-color: transparent !important;
+  color: #f5f5f5 !important;
+}
+.choices__input::placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+.choices__list--dropdown {
+  background-color: #1a1a1a !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+.choices__list--dropdown .choices__item {
+  color: #f5f5f5 !important;
+}
+.choices__list--dropdown .choices__item--selectable.is-highlighted {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+.choices[data-type*="select-multiple"] .choices__button {
+  border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
