@@ -1562,7 +1562,14 @@
                     ? 'rgba(40, 167, 69, 0.2)' : 'rgba(255, 255, 255, 0.15)';
                 blogCountBadge.style.color = selectedBlogs.size > 0 ? '#28a745' : '#ffffff';
 
-                const canSave = filledSlots === 3 && totalContentSelected > 0 && selectedBlogs.size > 0;
+                let allCategoriesHaveContent = true;
+                for (let i = 1; i <= 3; i++) {
+                    if (selectedContent[i].size === 0) {
+                        allCategoriesHaveContent = false;
+                    }
+                }
+
+                const canSave = filledSlots === 3 && allCategoriesHaveContent && selectedBlogs.size > 0;
                 saveBtn.disabled = !canSave;
                 saveBtn.classList.toggle('disabled', !canSave);
                 saveBtn.style.opacity = canSave ? '1' : '0.4';
@@ -1911,6 +1918,17 @@
                                     <button type="submit" class="btn btn-sm btn-outline-light">
                                         <i class="fas" th:classappend="${item.status.name() == 'APPROVED'} ? 'fa-eye-slash' : 'fa-eye'"></i>
                                         <span th:text="${item.status.name() == 'APPROVED'} ? 'Hide' : 'Show'"></span>
+                                    </button>
+                                </form>
+
+                                <form th:action="@{/admin/blog/{id}/feature(id=${item.id})}" method="post" th:if="${item.contentType == 'Blog' and !item.featured}">
+                                    <button type="submit" class="btn btn-sm btn-outline-warning">
+                                        <i class="fas fa-star"></i> Feature
+                                    </button>
+                                </form>
+                                <form th:action="@{/admin/blog/{id}/unfeature(id=${item.id})}" method="post" th:if="${item.contentType == 'Blog' and item.featured}">
+                                    <button type="submit" class="btn btn-sm btn-warning">
+                                        <i class="fas fa-star"></i> Unfeature
                                     </button>
                                 </form>
 

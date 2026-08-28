@@ -238,16 +238,35 @@ public class AdminController {
     // POST: Make Featured
     // ────────────────────────────────────────────────────────────────────────────
     @PostMapping("/blog/{id}/feature")
-    public String featureContent(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String featureContent(@PathVariable Long id, @RequestHeader(value = "Referer", required = false) String referer, RedirectAttributes redirectAttributes) {
         ContentItem item = contentItemService.findContentById(id);
         if (item != null) {
+            List<ContentItem> currentlyFeatured = contentItemRepository.findByFeaturedTrue();
+            for (ContentItem f : currentlyFeatured) {
+                f.setFeatured(false);
+            }
+            contentItemRepository.saveAll(currentlyFeatured);
+            
             item.setFeatured(true);
             contentItemRepository.save(item);
-            redirectAttributes.addFlashAttribute("successMessage", "Content marked as featured!");
+            redirectAttributes.addFlashAttribute("successMessage", "Content marked as featured! Previous featured content was automatically unfeatured.");
         } else {
             redirectAttributes.addFlashAttribute("error", "Content not found.");
         }
-        return "redirect:/admin";
+        return "redirect:" + (referer != null ? referer : "/admin");
+    }
+
+    @PostMapping("/blog/{id}/unfeature")
+    public String unfeatureContent(@PathVariable Long id, @RequestHeader(value = "Referer", required = false) String referer, RedirectAttributes redirectAttributes) {
+        ContentItem item = contentItemService.findContentById(id);
+        if (item != null) {
+            item.setFeatured(false);
+            contentItemRepository.save(item);
+            redirectAttributes.addFlashAttribute("successMessage", "Content unmarked as featured.");
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Content not found.");
+        }
+        return "redirect:" + (referer != null ? referer : "/admin");
     }
 
     // ────────────────────────────────────────────────────────────────────────────
@@ -340,13 +359,13 @@ public class AdminController {
     // Featured Page Builder
     @PostMapping("/featured/save")
     public String saveFeaturedPage(
-            @RequestParam List<Long> blogIds,
-            @RequestParam Long categoryId1,
-            @RequestParam Long categoryId2,
-            @RequestParam Long categoryId3,
-            @RequestParam List<Long> contentIds1,
-            @RequestParam List<Long> contentIds2,
-            @RequestParam List<Long> contentIds3,
+            @RequestParam(required = false) List<Long> blogIds,
+            @RequestParam(required = false) Long categoryId1,
+            @RequestParam(required = false) Long categoryId2,
+            @RequestParam(required = false) Long categoryId3,
+            @RequestParam(required = false) List<Long> contentIds1,
+            @RequestParam(required = false) List<Long> contentIds2,
+            @RequestParam(required = false) List<Long> contentIds3,
             RedirectAttributes redirectAttributes) {
         try {
             // Build blog list from selected IDs
@@ -362,19 +381,26 @@ public class AdminController {
             // Build category-content map from selected IDs
             Map<Category, List<ContentItem>> categoriesContentMap = new LinkedHashMap<>();
 
-            Category cat1 = categoryRepository.findById(categoryId1)
-                    .orElseThrow(() -> new RuntimeException("Category 1 not found"));
-            Category cat2 = categoryRepository.findById(categoryId2)
-                    .orElseThrow(() -> new RuntimeException("Category 2 not found"));
-            Category cat3 = categoryRepository.findById(categoryId3)
-                    .orElseThrow(() -> new RuntimeException("Category 3 not found"));
+            if (categoryId1 != null) {
+                Category cat1 = categoryRepository.findById(categoryId1)
+                        .orElseThrow(() -> new RuntimeException("Category 1 not found"));
+                categoriesContentMap.put(cat1, contentIds1 != null ? contentItemRepository.findAllById(contentIds1)
+                        .stream().map(item -> (ContentItem) item).collect(Collectors.toList()) : new ArrayList<>());
+            }
+            
+            if (categoryId2 != null) {
+                Category cat2 = categoryRepository.findById(categoryId2)
+                        .orElseThrow(() -> new RuntimeException("Category 2 not found"));
+                categoriesContentMap.put(cat2, contentIds2 != null ? contentItemRepository.findAllById(contentIds2)
+                        .stream().map(item -> (ContentItem) item).collect(Collectors.toList()) : new ArrayList<>());
+            }
 
-            categoriesContentMap.put(cat1, contentItemRepository.findAllById(contentIds1)
-                    .stream().map(item -> (ContentItem) item).collect(Collectors.toList()));
-            categoriesContentMap.put(cat2, contentItemRepository.findAllById(contentIds2)
-                    .stream().map(item -> (ContentItem) item).collect(Collectors.toList()));
-            categoriesContentMap.put(cat3, contentItemRepository.findAllById(contentIds3)
-                    .stream().map(item -> (ContentItem) item).collect(Collectors.toList()));
+            if (categoryId3 != null) {
+                Category cat3 = categoryRepository.findById(categoryId3)
+                        .orElseThrow(() -> new RuntimeException("Category 3 not found"));
+                categoriesContentMap.put(cat3, contentIds3 != null ? contentItemRepository.findAllById(contentIds3)
+                        .stream().map(item -> (ContentItem) item).collect(Collectors.toList()) : new ArrayList<>());
+            }
 
             FeaturedPageModel pageModel = new FeaturedPageModel(featuredBlogs, categoriesContentMap);
             featuredPageService.setFeaturedPageModel(pageModel);
