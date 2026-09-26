@@ -19,6 +19,16 @@
         overflow: visible !important;
     }
 
+    #blogContent img{
+        max-width: 100%;
+        height: auto;
+    }
+
+    #BlogHeading h1 {
+        white-space: nowrap;
+        font-size: clamp(20px, 8vw, 78px);
+    }
+
     main.container-fluid {
         overflow-y: visible !important;
         flex: none !important;

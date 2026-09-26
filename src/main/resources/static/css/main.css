@@ -319,9 +319,17 @@ margin-top:75px;
   box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.08) !important;
 }
 /* ============== Posted Blog ================== */
-#postedBlogBody{
-background-color:white;
-color:black;
+#postedBlogBody {
+  background-color: white;
+  color: black;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+#postedBlogBody img {
+  max-width: 100%;
+  height: auto;
 }
 
 /* ============== Choices.js Overrides ============== */
