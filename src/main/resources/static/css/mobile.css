@@ -25,7 +25,8 @@
     }
 
     #BlogHeading h1 {
-        white-space: nowrap;
+        white-space: normal;
+        width: 100%;
         font-size: clamp(20px, 8vw, 78px);
     }
 
